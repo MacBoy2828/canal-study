@@ -53,7 +53,7 @@ jobs:
 
       - name: Bump version
         if: inputs.bump != 'none'
-        run: node scripts/bump-version.mjs "${{ inputs.bump }}"
+        run: node scripts/bump-version.cjs "${{ inputs.bump }}"
 
       - name: Resolve version
         id: meta

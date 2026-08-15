@@ -14,7 +14,7 @@ alwaysApply: true
 - User-facing version: `app.json` → `expo.version` (semver, e.g. `1.2.3`)
 - Android install uniqueness: `app.json` → `android.versionCode` (integer, must increase every store/sideload release)
 - Keep `package.json` `version` equal to `expo.version`
-- Prefer the helper: `node scripts/bump-version.mjs patch|minor|major`
+- Prefer the helper: `node scripts/bump-version.cjs patch|minor|major`
 
 ## After a bump the user approved
 1. Update version files (or run the bump script)

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Bump Canal Study versions in app.json + package.json.
- * Usage: node scripts/bump-version.mjs [patch|minor|major|x.y.z]
+ * Usage: node scripts/bump-version.cjs [patch|minor|major|x.y.z]
  */
 const fs = require('fs');
 const path = require('path');
@@ -35,7 +35,7 @@ if (/^\d+\.\d+\.\d+$/.test(arg) || /^v\d+\.\d+\.\d+$/i.test(arg)) {
   else if (arg === 'minor') next = format([major, minor + 1, 0]);
   else if (arg === 'patch') next = format([major, minor, patch + 1]);
   else {
-    console.error('Usage: node scripts/bump-version.mjs [patch|minor|major|x.y.z]');
+    console.error('Usage: node scripts/bump-version.cjs [patch|minor|major|x.y.z]');
     process.exit(1);
   }
 }
