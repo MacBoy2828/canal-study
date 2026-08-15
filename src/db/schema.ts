@@ -56,6 +56,21 @@ async function ensureSettingsColumns(db: SQLiteDatabase): Promise<void> {
       `ALTER TABLE settings ADD COLUMN active_deck_id TEXT`
     );
   }
+  if (!cols.includes('reminder_enabled')) {
+    await db.execAsync(
+      `ALTER TABLE settings ADD COLUMN reminder_enabled INTEGER NOT NULL DEFAULT 0`
+    );
+  }
+  if (!cols.includes('reminder_hour')) {
+    await db.execAsync(
+      `ALTER TABLE settings ADD COLUMN reminder_hour INTEGER NOT NULL DEFAULT 19`
+    );
+  }
+  if (!cols.includes('reminder_minute')) {
+    await db.execAsync(
+      `ALTER TABLE settings ADD COLUMN reminder_minute INTEGER NOT NULL DEFAULT 0`
+    );
+  }
 }
 
 async function migrateOrCreateCards(db: SQLiteDatabase): Promise<void> {

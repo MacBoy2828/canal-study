@@ -20,3 +20,5 @@ When the user asks to finish public-repo polish, do the following:
 - Prefer GitHub Actions workflow `.github/workflows/release-apk.yml` (**Release Android APK**) to bump, build `Canal-Study.apk`, and publish a GitHub Release
 - Release tags must be semver (`v1.2.0`); APK asset name must remain `Canal-Study.apk` for in-app updates
 - `expo.extra.updates.githubOwner` / `githubRepo` must match this repository
+- When running the workflow, fill the optional **notes** input with short user-facing release notes; GitHub also appends auto-generated notes from commits
+- Commit messages must follow `.cursor/rules/commit-messages.mdc` so auto release notes stay readable

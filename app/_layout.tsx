@@ -14,6 +14,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 
 import { initDatabase } from '@/src/db/schema';
+import { DecksProvider } from '@/src/hooks/useDecks';
 import { colors } from '@/src/theme';
 import { UpdateProvider } from '@/src/updates/UpdateProvider';
 
@@ -51,12 +52,14 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.mist }}>
       <SQLiteProvider databaseName="canal-study.db" onInit={initDatabase}>
-        <UpdateProvider>
-          <StatusBar style="dark" />
-          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.mist } }}>
-            <Stack.Screen name="(tabs)" />
-          </Stack>
-        </UpdateProvider>
+        <DecksProvider>
+          <UpdateProvider>
+            <StatusBar style="dark" />
+            <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.mist } }}>
+              <Stack.Screen name="(tabs)" />
+            </Stack>
+          </UpdateProvider>
+        </DecksProvider>
       </SQLiteProvider>
     </GestureHandlerRootView>
   );

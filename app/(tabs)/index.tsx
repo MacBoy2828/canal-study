@@ -9,12 +9,10 @@ import { GradeButtons } from '@/src/components/GradeButtons';
 import { ScreenBackground } from '@/src/components/ScreenBackground';
 import { SwipeDeck } from '@/src/components/SwipeDeck';
 import { deckLabel } from '@/src/db/decks';
-import { useDecks } from '@/src/hooks/useDecks';
 import { useStudySession } from '@/src/hooks/useStudySession';
 import { colors, fonts, spacing } from '@/src/theme';
 
 export default function StudyScreen() {
-  const { decks, select } = useDecks();
   const {
     current,
     revealed,
@@ -22,6 +20,8 @@ export default function StudyScreen() {
     poolSize,
     progressLabel,
     activeDeck,
+    decks,
+    select,
     reveal,
     grade,
   } = useStudySession();
@@ -78,7 +78,7 @@ export default function StudyScreen() {
         light
       />
       <Animated.View
-        key={current.card.id + current.mode}
+        key={current.card.id + current.mode + activeDeck.id}
         entering={FadeInDown.duration(320)}
         style={styles.stage}
       >

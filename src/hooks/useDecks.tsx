@@ -1,7 +1,15 @@
-import { useCallback, useEffect, useState } from 'react';
-import { useFocusEffect } from 'expo-router';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
 import { useSQLiteContext } from 'expo-sqlite';
 
+import * as cardsDb from '@/src/db/cards';
 import * as decksDb from '@/src/db/decks';
 import {
   getSettings,
@@ -10,7 +18,22 @@ import {
 } from '@/src/db/settings';
 import type { Deck, NewDeck } from '@/src/db/types';
 
-export function useDecks() {
+type DecksContextValue = {
+  decks: Deck[];
+  activeDeck: Deck | null;
+  displayLimit: number;
+  loading: boolean;
+  refresh: () => Promise<void>;
+  create: (input: NewDeck) => Promise<Deck>;
+  update: (id: string, input: NewDeck) => Promise<void>;
+  remove: (id: string) => Promise<void>;
+  select: (id: string) => Promise<void>;
+  setDisplayLimit: (value: number) => Promise<void>;
+};
+
+const DecksContext = createContext<DecksContextValue | null>(null);
+
+export function DecksProvider({ children }: { children: ReactNode }) {
   const db = useSQLiteContext();
   const [decks, setDecks] = useState<Deck[]>([]);
   const [activeDeck, setActiveDeck] = useState<Deck | null>(null);
@@ -27,7 +50,7 @@ export function useDecks() {
       setDecks(allDecks);
       setDisplayLimitState(settings.displayLimit);
 
-      let current: typeof allDecks[number] | null = null;
+      let current: Deck | null = null;
       if (settings.activeDeckId) {
         current =
           allDecks.find((d) => d.id === settings.activeDeckId) ?? null;
@@ -52,12 +75,6 @@ export function useDecks() {
   useEffect(() => {
     void refresh();
   }, [refresh]);
-
-  useFocusEffect(
-    useCallback(() => {
-      void refresh();
-    }, [refresh])
-  );
 
   const create = useCallback(
     async (input: NewDeck) => {
@@ -100,22 +117,50 @@ export function useDecks() {
 
   const setDisplayLimit = useCallback(
     async (value: number) => {
-      await saveDisplayLimit(db, value);
-      setDisplayLimitState(Math.max(1, Math.min(100, Math.round(value))));
+      const clamped = Math.max(1, Math.min(100, Math.round(value)));
+      await saveDisplayLimit(db, clamped);
+      await cardsDb.reconcileStatusesForDisplayLimit(db, clamped);
+      setDisplayLimitState(clamped);
     },
     [db]
   );
 
-  return {
-    decks,
-    activeDeck,
-    displayLimit,
-    loading,
-    refresh,
-    create,
-    update,
-    remove,
-    select,
-    setDisplayLimit,
-  };
+  const value = useMemo(
+    () => ({
+      decks,
+      activeDeck,
+      displayLimit,
+      loading,
+      refresh,
+      create,
+      update,
+      remove,
+      select,
+      setDisplayLimit,
+    }),
+    [
+      decks,
+      activeDeck,
+      displayLimit,
+      loading,
+      refresh,
+      create,
+      update,
+      remove,
+      select,
+      setDisplayLimit,
+    ]
+  );
+
+  return (
+    <DecksContext.Provider value={value}>{children}</DecksContext.Provider>
+  );
+}
+
+export function useDecks(): DecksContextValue {
+  const value = useContext(DecksContext);
+  if (!value) {
+    throw new Error('useDecks must be used within DecksProvider');
+  }
+  return value;
 }

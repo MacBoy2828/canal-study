@@ -1,0 +1,14 @@
+---
+description: Commit messages must be meaningful to end users
+alwaysApply: true
+---
+
+# Commit messages for users
+
+Write commit messages for people who read GitHub release notes and history—not for developers only.
+
+- Prefer clear, user-facing language: what changed for someone using Canal Study.
+- Good: `Keep the keyboard open after adding a card` / `Fix language switching on the Study tab` / `Add daily study reminders`
+- Avoid opaque machine style when a plain sentence works: no bare `fix`, `wip`, or unexplained `chore:` unless the change is truly internal (CI-only, deps with no user impact).
+- For releases, use something like `Release Canal Study v2.0.2` plus notes that list user-visible changes.
+- Release notes are generated from commits between tags—assume every commit may appear in a GitHub Release.

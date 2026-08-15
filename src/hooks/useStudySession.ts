@@ -3,7 +3,6 @@ import { useFocusEffect } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 
 import * as cardsDb from '@/src/db/cards';
-import { getSettings } from '@/src/db/settings';
 import type { Deck, Flashcard, StudyMode } from '@/src/db/types';
 import { useDecks } from '@/src/hooks/useDecks';
 
@@ -47,9 +46,8 @@ function buildPrompt(
 
 export function useStudySession() {
   const db = useSQLiteContext();
-  const { activeDeck } = useDecks();
+  const { activeDeck, displayLimit, select, decks } = useDecks();
   const [pool, setPool] = useState<Flashcard[]>([]);
-  const [displayLimit, setDisplayLimit] = useState(10);
   const [current, setCurrent] = useState<StudyPrompt | null>(null);
   const [revealed, setRevealed] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -70,9 +68,6 @@ export function useStudySession() {
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      const settings = await getSettings(db);
-      setDisplayLimit(settings.displayLimit);
-
       if (!activeDeck) {
         setPool([]);
         setCurrent(null);
@@ -95,7 +90,7 @@ export function useStudySession() {
 
   useEffect(() => {
     void refresh();
-  }, [activeDeck?.id]);
+  }, [activeDeck?.id, refresh]);
 
   const reveal = useCallback(() => {
     setRevealed(true);
@@ -125,6 +120,8 @@ export function useStudySession() {
     displayLimit,
     progressLabel,
     activeDeck,
+    decks,
+    select,
     reveal,
     grade,
     refresh,

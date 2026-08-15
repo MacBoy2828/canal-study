@@ -23,6 +23,9 @@ export type Flashcard = {
 export type Settings = {
   displayLimit: number;
   activeDeckId: string | null;
+  reminderEnabled: boolean;
+  reminderHour: number;
+  reminderMinute: number;
 };
 
 export type StudyMode = 'source-to-dest' | 'dest-to-source';

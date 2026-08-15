@@ -3,12 +3,17 @@ import {
   Alert,
   FlatList,
   Linking,
+  Platform,
   Pressable,
   StyleSheet,
+  Switch,
   Text,
   TextInput,
   View,
 } from 'react-native';
+import DateTimePicker, {
+  type DateTimePickerEvent,
+} from '@react-native-community/datetimepicker';
 import * as Application from 'expo-application';
 import Constants from 'expo-constants';
 
@@ -17,6 +22,7 @@ import { ScreenBackground } from '@/src/components/ScreenBackground';
 import { Toast } from '@/src/components/Toast';
 import { deckLabel } from '@/src/db/decks';
 import { useDecks } from '@/src/hooks/useDecks';
+import { useStudyReminder } from '@/src/hooks/useStudyReminder';
 import { colors, fonts, radius, spacing } from '@/src/theme';
 import { useUpdate } from '@/src/updates/UpdateProvider';
 
@@ -33,11 +39,14 @@ export default function SettingsScreen() {
     setDisplayLimit,
   } = useDecks();
   const { checkForUpdate, localVersion, status } = useUpdate();
+  const reminder = useStudyReminder();
   const [limitValue, setLimitValue] = useState(String(displayLimit));
   const [sourceLanguage, setSourceLanguage] = useState('');
   const [destinationLanguage, setDestinationLanguage] = useState('');
   const [toast, setToast] = useState<string | null>(null);
   const [limitSaved, setLimitSaved] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [draftTime, setDraftTime] = useState<Date | null>(null);
 
   const buildNumber =
     Application.nativeBuildVersion ??
@@ -84,6 +93,78 @@ export default function SettingsScreen() {
   const openGitHub = () => {
     void Linking.openURL(GITHUB_REPO_URL);
   };
+
+  const showPermissionHelp = () => {
+    Alert.alert(
+      'Notifications needed',
+      'Allow notifications for Canal Study in system settings to get daily study reminders.',
+      [
+        { text: 'Not now', style: 'cancel' },
+        {
+          text: 'Open settings',
+          onPress: () => void Linking.openSettings(),
+        },
+      ]
+    );
+  };
+
+  const onToggleReminder = async (next: boolean) => {
+    const result = await reminder.setEnabled(next);
+    if (!result.ok && result.reason === 'permission') {
+      showPermissionHelp();
+      return;
+    }
+    setToast(
+      next
+        ? `Daily reminder set for ${reminder.timeLabel}`
+        : 'Daily reminder turned off'
+    );
+  };
+
+  const onReminderTimeChange = (
+    event: DateTimePickerEvent,
+    date?: Date
+  ) => {
+    if (Platform.OS === 'android') {
+      setShowTimePicker(false);
+      if (event.type !== 'set' || !date) return;
+      void applyReminderTime(date);
+      return;
+    }
+    if (date) setDraftTime(date);
+  };
+
+  const applyReminderTime = async (date: Date) => {
+    const result = await reminder.setTime(date.getHours(), date.getMinutes());
+    if (!result.ok && result.reason === 'permission') {
+      showPermissionHelp();
+      return;
+    }
+    const label = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+    setToast(`Reminder time set to ${label}`);
+  };
+
+  const openTimePicker = () => {
+    const date = new Date();
+    date.setHours(reminder.hour, reminder.minute, 0, 0);
+    setDraftTime(date);
+    setShowTimePicker(true);
+  };
+
+  const confirmIosTime = async () => {
+    setShowTimePicker(false);
+    if (draftTime) {
+      await applyReminderTime(draftTime);
+    }
+  };
+
+  const reminderPickerDate =
+    draftTime ??
+    (() => {
+      const date = new Date();
+      date.setHours(reminder.hour, reminder.minute, 0, 0);
+      return date;
+    })();
 
   const checking = status === 'checking' || status === 'downloading';
 
@@ -158,7 +239,9 @@ export default function SettingsScreen() {
               <Text style={styles.title}>Display limit</Text>
               <Text style={styles.copy}>
                 After a card is shown this many times in the active pair, it
-                moves to the archive.
+                moves to the archive. Raising the limit brings archived cards
+                back if they are still under it; lowering archives cards that
+                already meet the new limit.
               </Text>
               <TextInput
                 value={limitValue}
@@ -172,6 +255,56 @@ export default function SettingsScreen() {
                 </Text>
               </Pressable>
             </View>
+
+            {Platform.OS !== 'web' ? (
+              <View style={styles.card}>
+                <Text style={styles.title}>Daily reminder</Text>
+                <Text style={styles.copy}>
+                  Get a local notification each day at the time you choose.
+                </Text>
+                <View style={styles.reminderRow}>
+                  <Text style={styles.reminderLabel}>Remind me to study</Text>
+                  <Switch
+                    value={reminder.enabled}
+                    onValueChange={(value) => void onToggleReminder(value)}
+                    disabled={reminder.loading || reminder.busy}
+                    trackColor={{
+                      false: colors.mistDeep,
+                      true: colors.orangeSoft,
+                    }}
+                    thumbColor={
+                      reminder.enabled ? colors.orange : colors.white
+                    }
+                  />
+                </View>
+                <Pressable
+                  onPress={openTimePicker}
+                  disabled={reminder.loading || reminder.busy}
+                  style={styles.secondaryButton}
+                >
+                  <Text style={styles.secondaryButtonText}>
+                    Reminder time · {reminder.timeLabel}
+                  </Text>
+                </Pressable>
+                {showTimePicker ? (
+                  <DateTimePicker
+                    value={reminderPickerDate}
+                    mode="time"
+                    is24Hour
+                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    onChange={onReminderTimeChange}
+                  />
+                ) : null}
+                {Platform.OS === 'ios' && showTimePicker ? (
+                  <Pressable
+                    onPress={() => void confirmIosTime()}
+                    style={styles.button}
+                  >
+                    <Text style={styles.buttonText}>Done</Text>
+                  </Pressable>
+                ) : null}
+              </View>
+            ) : null}
 
             <Text style={styles.sectionTitle}>Your language pairs</Text>
             {decks.length === 0 ? (
@@ -292,6 +425,18 @@ const styles = StyleSheet.create({
   secondaryButtonText: {
     fontFamily: fonts.bodySemi,
     fontSize: 15,
+    color: colors.ink,
+  },
+  reminderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+  },
+  reminderLabel: {
+    flex: 1,
+    fontFamily: fonts.bodySemi,
+    fontSize: 16,
     color: colors.ink,
   },
   sectionTitle: {

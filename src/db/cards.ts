@@ -165,3 +165,30 @@ export async function restoreCard(
     id
   );
 }
+
+/**
+ * Keep study/archive pools in sync with the display limit:
+ * - archived cards with fewer shows than the new limit return to study
+ * - active cards that already meet/exceed the new limit move to archive
+ */
+export async function reconcileStatusesForDisplayLimit(
+  db: SQLiteDatabase,
+  displayLimit: number
+): Promise<void> {
+  const clamped = Math.max(1, Math.min(100, Math.round(displayLimit)));
+  const now = Date.now();
+  await db.runAsync(
+    `UPDATE cards
+     SET status = 'active', updated_at = ?
+     WHERE status = 'archived' AND times_shown < ?`,
+    now,
+    clamped
+  );
+  await db.runAsync(
+    `UPDATE cards
+     SET status = 'archived', updated_at = ?
+     WHERE status = 'active' AND times_shown >= ?`,
+    now,
+    clamped
+  );
+}

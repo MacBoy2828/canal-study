@@ -14,6 +14,11 @@ on:
           - major
           - none
         # "none" = keep current app.json version (already bumped locally)
+      notes:
+        description: Optional release notes for users (shown on the GitHub Release page). Leave blank to use auto notes from commits.
+        required: false
+        type: string
+        default: ''
 
 concurrency:
   group: release-android
@@ -46,7 +51,7 @@ jobs:
           java-version: 17
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
 
       - name: Accept Android licenses
         run: yes | sdkmanager --licenses >/dev/null || true
@@ -86,13 +91,28 @@ jobs:
           cp android/app/build/outputs/apk/release/app-release.apk dist/Canal-Study.apk
           ls -lh dist/Canal-Study.apk
 
+      - name: Write release notes file
+        env:
+          MANUAL_NOTES: ${{ inputs.notes }}
+        run: |
+          {
+            if [ -n "$MANUAL_NOTES" ]; then
+              printf '%s\n\n' "$MANUAL_NOTES"
+            fi
+            echo "### Install"
+            echo "Download **Canal-Study.apk** below and install it on your Android device."
+            echo ""
+            echo "Version **${{ steps.meta.outputs.version }}** (versionCode ${{ steps.meta.outputs.version_code }})."
+          } > dist/release-notes.md
+          cat dist/release-notes.md
+
       - name: Commit version bump and create tag
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add app.json package.json
           if ! git diff --cached --quiet; then
-            git commit -m "chore: release v${{ steps.meta.outputs.version }}"
+            git commit -m "Release Canal Study v${{ steps.meta.outputs.version }}"
             git push origin HEAD:${{ github.ref_name }}
           fi
           if git rev-parse "${{ steps.meta.outputs.tag }}" >/dev/null 2>&1; then
@@ -103,10 +123,11 @@ jobs:
           fi
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ steps.meta.outputs.tag }}
           name: Canal Study ${{ steps.meta.outputs.tag }}
+          body_path: dist/release-notes.md
           generate_release_notes: true
           files: dist/Canal-Study.apk
           fail_on_unmatched_files: true
