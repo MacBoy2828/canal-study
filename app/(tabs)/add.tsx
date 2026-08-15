@@ -30,6 +30,7 @@ export default function AddScreen() {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
+  const sourceRef = useRef<TextInputType>(null);
   const destinationRef = useRef<TextInputType>(null);
   const scrollRef = useRef<ScrollView>(null);
 
@@ -66,7 +67,10 @@ export default function AddScreen() {
       setSourceText('');
       setDestinationText('');
       setToast(`Added “${word}”`);
-      Keyboard.dismiss();
+      // Keep the keyboard up for rapid entry of the next card.
+      requestAnimationFrame(() => {
+        sourceRef.current?.focus();
+      });
     } finally {
       setSaving(false);
     }
@@ -116,6 +120,7 @@ export default function AddScreen() {
           ) : null}
           <Text style={styles.label}>{activeDeck.sourceLanguage}</Text>
           <TextInput
+            ref={sourceRef}
             value={sourceText}
             onChangeText={setSourceText}
             placeholder={`Word in ${activeDeck.sourceLanguage}`}
@@ -137,6 +142,7 @@ export default function AddScreen() {
             style={styles.input}
             autoCapitalize="none"
             returnKeyType="done"
+            blurOnSubmit={false}
             onFocus={() => {
               requestAnimationFrame(() => {
                 scrollRef.current?.scrollToEnd({ animated: true });
