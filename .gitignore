@@ -10,21 +10,21 @@ web-build/
 expo-env.d.ts
 
 # Native
-.kotlin/
-*.orig.*
+/android
+/ios
+
+# Build output
+/dist/
+
+# Signing credentials
+/credentials/
 *.jks
+*.keystore
 *.p8
 *.p12
 *.key
 *.mobileprovision
-
-# Metro
-.metro-health-check*
-
-# debug
-npm-debug.*
-yarn-debug.*
-yarn-error.*
+*.pem
 
 # macOS
 .DS_Store
@@ -36,6 +36,18 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
 # generated native folders
-/ios
 /android
+/ios
+.cursor/
+AGENTS.md
+CLAUDE.md
+.claude/

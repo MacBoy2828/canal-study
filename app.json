@@ -1,23 +1,28 @@
 {
   "expo": {
-    "name": "flashcard",
-    "slug": "flashcard",
+    "name": "Canal Study",
+    "slug": "canal-study",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "flashcard",
-    "userInterfaceStyle": "automatic",
+    "scheme": "canalstudy",
+    "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.canalstudy.app"
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "backgroundColor": "#A8C0D4",
+        "foregroundImage": "./assets/images/brand-mark.png"
       },
-      "predictiveBackGestureEnabled": false
+      "package": "com.canalstudy.app",
+      "versionCode": 1,
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.INTERNET",
+        "android.permission.REQUEST_INSTALL_PACKAGES"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -31,10 +36,20 @@
         {
           "image": "./assets/images/splash-icon.png",
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#D7E4EE"
         }
-      ]
+      ],
+      "expo-sqlite",
+      "expo-font",
+      "expo-image"
     ],
+    "extra": {
+      "updates": {
+        "githubOwner": "MacBoy2828",
+        "githubRepo": "canal-study",
+        "apkAssetName": "Canal-Study.apk"
+      }
+    },
     "experiments": {
       "typedRoutes": true
     }

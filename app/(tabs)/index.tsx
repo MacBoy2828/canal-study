@@ -1,31 +1,124 @@
-import { StyleSheet } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
-import EditScreenInfo from '@/components/EditScreenInfo';
-import { Text, View } from '@/components/Themed';
+import { BrandHeader } from '@/src/components/BrandHeader';
+import { DeckSwitcher } from '@/src/components/DeckSwitcher';
+import { EmptyState } from '@/src/components/EmptyState';
+import { FlashCardFace } from '@/src/components/FlashCard';
+import { GradeButtons } from '@/src/components/GradeButtons';
+import { ScreenBackground } from '@/src/components/ScreenBackground';
+import { SwipeDeck } from '@/src/components/SwipeDeck';
+import { deckLabel } from '@/src/db/decks';
+import { useDecks } from '@/src/hooks/useDecks';
+import { useStudySession } from '@/src/hooks/useStudySession';
+import { colors, fonts, spacing } from '@/src/theme';
 
-export default function TabOneScreen() {
+export default function StudyScreen() {
+  const { decks, select } = useDecks();
+  const {
+    current,
+    revealed,
+    loading,
+    poolSize,
+    progressLabel,
+    activeDeck,
+    reveal,
+    grade,
+  } = useStudySession();
+
+  if (loading) {
+    return (
+      <ScreenBackground heroImage={require('../../assets/images/hero-study.png')}>
+        <BrandHeader subtitle="Flashcards" light />
+        <View style={styles.center}>
+          <ActivityIndicator color={colors.paper} size="large" />
+        </View>
+      </ScreenBackground>
+    );
+  }
+
+  if (!activeDeck) {
+    return (
+      <ScreenBackground>
+        <BrandHeader subtitle="Flashcards" />
+        <EmptyState
+          image={require('../../assets/images/empty-pool.png')}
+          title="Choose your languages"
+          message="Create a language pair in Settings (for example Spanish → English), then add cards and study."
+        />
+      </ScreenBackground>
+    );
+  }
+
+  if (!current || poolSize === 0) {
+    return (
+      <ScreenBackground>
+        <BrandHeader subtitle={deckLabel(activeDeck)} />
+        <DeckSwitcher
+          decks={decks}
+          activeDeckId={activeDeck.id}
+          onSelect={(id) => void select(id)}
+        />
+        <EmptyState
+          image={require('../../assets/images/empty-pool.png')}
+          title="No cards in this pair"
+          message={`Add words for ${deckLabel(activeDeck)} from the Add tab, then come back to study.`}
+        />
+      </ScreenBackground>
+    );
+  }
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
-    </View>
+    <ScreenBackground heroImage={require('../../assets/images/hero-study.png')}>
+      <BrandHeader subtitle="Tap to reveal · swipe to grade" light />
+      <DeckSwitcher
+        decks={decks}
+        activeDeckId={activeDeck.id}
+        onSelect={(id) => void select(id)}
+        light
+      />
+      <Animated.View
+        key={current.card.id + current.mode}
+        entering={FadeInDown.duration(320)}
+        style={styles.stage}
+      >
+        <SwipeDeck enabled={revealed} onGrade={grade}>
+          <FlashCardFace
+            prompt={current}
+            revealed={revealed}
+            progressLabel={progressLabel}
+            onReveal={reveal}
+          />
+        </SwipeDeck>
+        <GradeButtons
+          visible={revealed}
+          onWrong={() => void grade(false)}
+          onCorrect={() => void grade(true)}
+        />
+        <Text style={styles.poolHint}>
+          {deckLabel(activeDeck)} · {poolSize} card
+          {poolSize === 1 ? '' : 's'}
+        </Text>
+      </Animated.View>
+    </ScreenBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  center: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
+  stage: {
+    flex: 1,
+    justifyContent: 'center',
   },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
+  poolHint: {
+    marginTop: spacing.md,
+    textAlign: 'center',
+    fontFamily: fonts.body,
+    fontSize: 14,
+    color: colors.mist,
   },
 });
