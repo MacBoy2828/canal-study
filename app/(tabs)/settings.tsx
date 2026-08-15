@@ -2,12 +2,15 @@ import { useEffect, useState } from 'react';
 import {
   Alert,
   FlatList,
+  Linking,
   Pressable,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
+import * as Application from 'expo-application';
+import Constants from 'expo-constants';
 
 import { BrandHeader } from '@/src/components/BrandHeader';
 import { ScreenBackground } from '@/src/components/ScreenBackground';
@@ -15,6 +18,9 @@ import { Toast } from '@/src/components/Toast';
 import { deckLabel } from '@/src/db/decks';
 import { useDecks } from '@/src/hooks/useDecks';
 import { colors, fonts, radius, spacing } from '@/src/theme';
+import { useUpdate } from '@/src/updates/UpdateProvider';
+
+const GITHUB_REPO_URL = 'https://github.com/MacBoy2828/canal-study';
 
 export default function SettingsScreen() {
   const {
@@ -26,11 +32,16 @@ export default function SettingsScreen() {
     select,
     setDisplayLimit,
   } = useDecks();
+  const { checkForUpdate, localVersion, status } = useUpdate();
   const [limitValue, setLimitValue] = useState(String(displayLimit));
   const [sourceLanguage, setSourceLanguage] = useState('');
   const [destinationLanguage, setDestinationLanguage] = useState('');
   const [toast, setToast] = useState<string | null>(null);
   const [limitSaved, setLimitSaved] = useState(false);
+
+  const buildNumber =
+    Application.nativeBuildVersion ??
+    String(Constants.expoConfig?.android?.versionCode ?? '');
 
   useEffect(() => {
     setLimitValue(String(displayLimit));
@@ -70,6 +81,12 @@ export default function SettingsScreen() {
     );
   };
 
+  const openGitHub = () => {
+    void Linking.openURL(GITHUB_REPO_URL);
+  };
+
+  const checking = status === 'checking' || status === 'downloading';
+
   return (
     <ScreenBackground>
       <BrandHeader subtitle="Languages & preferences" />
@@ -78,6 +95,36 @@ export default function SettingsScreen() {
         keyExtractor={(item) => item.id}
         ListHeaderComponent={
           <View style={styles.headerBlock}>
+            <View style={styles.card}>
+              <Text style={styles.title}>About</Text>
+              <Text style={styles.versionLine}>
+                Canal Study {localVersion}
+                {buildNumber ? ` · build ${buildNumber}` : ''}
+              </Text>
+              <Text style={styles.copy}>
+                Open-source flashcards for any language pair. Source code and
+                releases are on GitHub.
+              </Text>
+              <Pressable onPress={openGitHub} style={styles.secondaryButton}>
+                <Text style={styles.secondaryButtonText}>
+                  github.com/MacBoy2828/canal-study
+                </Text>
+              </Pressable>
+              <Pressable
+                onPress={() => void checkForUpdate({ interactive: true })}
+                disabled={checking}
+                style={[styles.button, checking && styles.buttonDisabled]}
+              >
+                <Text style={styles.buttonText}>
+                  {status === 'checking'
+                    ? 'Checking…'
+                    : status === 'downloading'
+                      ? 'Downloading…'
+                      : 'Check for updates'}
+                </Text>
+              </Pressable>
+            </View>
+
             <View style={styles.card}>
               <Text style={styles.title}>New language pair</Text>
               <Text style={styles.copy}>
@@ -190,6 +237,11 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: colors.ink,
   },
+  versionLine: {
+    fontFamily: fonts.bodySemi,
+    fontSize: 17,
+    color: colors.orange,
+  },
   copy: {
     fontFamily: fonts.body,
     fontSize: 16,
@@ -221,10 +273,26 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     alignItems: 'center',
   },
+  buttonDisabled: {
+    opacity: 0.6,
+  },
   buttonText: {
     fontFamily: fonts.bodySemi,
     fontSize: 17,
     color: colors.white,
+  },
+  secondaryButton: {
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.mistDeep,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+    alignItems: 'center',
+  },
+  secondaryButtonText: {
+    fontFamily: fonts.bodySemi,
+    fontSize: 15,
+    color: colors.ink,
   },
   sectionTitle: {
     fontFamily: fonts.display,
