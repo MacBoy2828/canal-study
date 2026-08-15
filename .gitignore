@@ -47,7 +47,9 @@ yarn-error.*
 # generated native folders
 /android
 /ios
-.cursor/
+.cursor/*
+!.cursor/rules/
+!.cursor/rules/**
 AGENTS.md
 CLAUDE.md
 .claude/

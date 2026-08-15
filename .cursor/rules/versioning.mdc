@@ -1,0 +1,27 @@
+---
+description: App version bumps require explicit user approval
+alwaysApply: true
+---
+
+# Versioning (Canal Study)
+
+## Always ask first
+- **Never** bump `expo.version`, `android.versionCode`, `ios.buildNumber`, or `package.json` version without asking.
+- Ask clearly, for example: “Bump to **1.0.1** (patch) and cut a GitHub release?”
+- Wait for explicit agreement (yes / go ahead / bump patch / etc.) before changing version files.
+
+## How versions work
+- User-facing version: `app.json` → `expo.version` (semver, e.g. `1.2.3`)
+- Android install uniqueness: `app.json` → `android.versionCode` (integer, must increase every store/sideload release)
+- Keep `package.json` `version` equal to `expo.version`
+- Prefer the helper: `node scripts/bump-version.mjs patch|minor|major`
+
+## After a bump the user approved
+1. Update version files (or run the bump script)
+2. Commit the version bump
+3. Prefer releasing via GitHub Actions workflow **Release Android APK** (`workflow_dispatch`) so CI builds `Canal-Study.apk` and creates the GitHub Release automatically
+4. Do not manually upload APKs unless CI is unavailable or the user asks for a local build
+
+## Do not
+- Auto-bump on every commit
+- Create tags/releases without user confirmation for the version number

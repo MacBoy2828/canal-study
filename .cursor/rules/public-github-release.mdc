@@ -1,0 +1,22 @@
+---
+description: Checklist when publishing Canal Study to a public GitHub repo
+alwaysApply: true
+---
+
+# Public GitHub release
+
+When the user asks to finish public-repo polish, do the following:
+
+## Sanitize the repo
+- Remove personal or private information (emails, local paths, machine-specific notes, private keys, keystores, tokens, `.env*`, credentials under `/credentials/`)
+- Confirm `.gitignore` covers `credentials/`, keystores, `.env*`, local SDK paths, and build artifacts
+- Do not commit the Android signing keystore or Expo/EAS secrets
+
+## README
+- Create or update a clear `README.md` covering: what the app is, features, how to run with Expo, Android APK build, iOS build notes, language-pair usage, and how GitHub Actions releases work
+
+## Versioning and releases
+- Follow `.cursor/rules/versioning.mdc`: ask before any version bump
+- Prefer GitHub Actions workflow `.github/workflows/release-apk.yml` (**Release Android APK**) to bump, build `Canal-Study.apk`, and publish a GitHub Release
+- Release tags must be semver (`v1.2.0`); APK asset name must remain `Canal-Study.apk` for in-app updates
+- `expo.extra.updates.githubOwner` / `githubRepo` must match this repository
