@@ -1,7 +1,7 @@
 {
   "name": "canal-study",
   "main": "expo-router/entry",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "dependencies": {
     "@expo-google-fonts/fraunces": "^0.4.1",
     "@expo-google-fonts/source-sans-3": "^0.4.1",
