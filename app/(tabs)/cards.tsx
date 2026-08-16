@@ -3,13 +3,18 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
+  KeyboardAvoidingView,
   Modal,
+  Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { BrandHeader } from '@/src/components/BrandHeader';
 import { DeckSwitcher } from '@/src/components/DeckSwitcher';
@@ -19,9 +24,10 @@ import { deckLabel } from '@/src/db/decks';
 import type { Flashcard } from '@/src/db/types';
 import { useActiveCards } from '@/src/hooks/useCards';
 import { useDecks } from '@/src/hooks/useDecks';
-import { colors, fonts, radius, spacing } from '@/src/theme';
+import { colors, fonts, motion, radius, shadows, spacing } from '@/src/theme';
 
 export default function CardsScreen() {
+  const insets = useSafeAreaInsets();
   const { decks, activeDeck, select, displayLimit } = useDecks();
   const { cards, loading, update, remove } = useActiveCards();
   const [editing, setEditing] = useState<Flashcard | null>(null);
@@ -89,8 +95,14 @@ export default function CardsScreen() {
           data={cards}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
-          renderItem={({ item }) => (
-            <View style={styles.row}>
+          renderItem={({ item, index }) => (
+            <Animated.View
+              entering={FadeInDown.duration(motion.normal)
+                .delay(Math.min(index, 8) * 40)
+                .springify()
+                .damping(18)}
+              style={styles.row}
+            >
               <Pressable style={styles.main} onPress={() => openEdit(item)}>
                 <Text style={styles.source}>{item.sourceText}</Text>
                 <Text style={styles.destination}>{item.destinationText}</Text>
@@ -102,39 +114,74 @@ export default function CardsScreen() {
               <Pressable onPress={() => confirmDelete(item)} style={styles.delete}>
                 <Text style={styles.deleteText}>Delete</Text>
               </Pressable>
-            </View>
+            </Animated.View>
           )}
         />
       )}
 
-      <Modal visible={!!editing} animationType="slide" transparent>
-        <View style={styles.modalBackdrop}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Edit card</Text>
-            <TextInput
-              value={sourceText}
-              onChangeText={setSourceText}
-              style={styles.input}
-              placeholder={activeDeck.sourceLanguage}
-              placeholderTextColor={colors.tabInactive}
-            />
-            <TextInput
-              value={destinationText}
-              onChangeText={setDestinationText}
-              style={styles.input}
-              placeholder={activeDeck.destinationLanguage}
-              placeholderTextColor={colors.tabInactive}
-            />
-            <View style={styles.modalActions}>
-              <Pressable onPress={() => setEditing(null)} style={styles.secondary}>
-                <Text style={styles.secondaryText}>Cancel</Text>
-              </Pressable>
-              <Pressable onPress={() => void saveEdit()} style={styles.primary}>
-                <Text style={styles.primaryText}>Save</Text>
-              </Pressable>
-            </View>
+      <Modal
+        visible={!!editing}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setEditing(null)}
+      >
+        <KeyboardAvoidingView
+          style={styles.modalRoot}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 12 : 0}
+        >
+          <Pressable
+            style={styles.modalBackdrop}
+            onPress={() => setEditing(null)}
+          />
+          <View
+            style={[
+              styles.modalCard,
+              { marginBottom: Math.max(insets.bottom, spacing.md) },
+            ]}
+          >
+            <ScrollView
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.modalScroll}
+            >
+              <Text style={styles.modalTitle}>Edit card</Text>
+              <Text style={styles.modalLabel}>{activeDeck.sourceLanguage}</Text>
+              <TextInput
+                value={sourceText}
+                onChangeText={setSourceText}
+                style={styles.input}
+                placeholder={activeDeck.sourceLanguage}
+                placeholderTextColor={colors.tabInactive}
+                autoFocus
+              />
+              <Text style={styles.modalLabel}>
+                {activeDeck.destinationLanguage}
+              </Text>
+              <TextInput
+                value={destinationText}
+                onChangeText={setDestinationText}
+                style={styles.input}
+                placeholder={activeDeck.destinationLanguage}
+                placeholderTextColor={colors.tabInactive}
+              />
+              <View style={styles.modalActions}>
+                <Pressable
+                  onPress={() => setEditing(null)}
+                  style={styles.secondary}
+                >
+                  <Text style={styles.secondaryText}>Cancel</Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => void saveEdit()}
+                  style={styles.primary}
+                >
+                  <Text style={styles.primaryText}>Save</Text>
+                </Pressable>
+              </View>
+            </ScrollView>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </Modal>
     </ScreenBackground>
   );
@@ -147,11 +194,14 @@ const styles = StyleSheet.create({
   },
   row: {
     backgroundColor: colors.paper,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     padding: spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.paperEdge,
+    ...shadows.soft,
   },
   main: {
     flex: 1,
@@ -160,10 +210,11 @@ const styles = StyleSheet.create({
   source: {
     fontFamily: fonts.display,
     fontSize: 22,
+    letterSpacing: -0.3,
     color: colors.ink,
   },
   destination: {
-    fontFamily: fonts.body,
+    fontFamily: fonts.bodyMedium,
     fontSize: 16,
     color: colors.slate,
   },
@@ -182,28 +233,47 @@ const styles = StyleSheet.create({
     color: colors.wrong,
     fontSize: 14,
   },
-  modalBackdrop: {
+  modalRoot: {
     flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.md,
+  },
+  modalBackdrop: {
+    ...StyleSheet.absoluteFill,
     backgroundColor: colors.overlay,
-    justifyContent: 'flex-end',
   },
   modalCard: {
     backgroundColor: colors.paper,
-    borderTopLeftRadius: radius.lg,
-    borderTopRightRadius: radius.lg,
+    borderRadius: radius.sheet,
     padding: spacing.lg,
-    gap: spacing.md,
+    maxHeight: '88%',
+    zIndex: 1,
+    borderWidth: 1,
+    borderColor: colors.paperEdge,
+    ...shadows.float,
+  },
+  modalScroll: {
+    gap: spacing.sm,
+    paddingBottom: spacing.sm,
   },
   modalTitle: {
-    fontFamily: fonts.display,
-    fontSize: 24,
+    fontFamily: fonts.displayBold,
+    fontSize: 26,
+    letterSpacing: -0.3,
     color: colors.ink,
+    marginBottom: spacing.xs,
+  },
+  modalLabel: {
+    fontFamily: fonts.bodySemi,
+    fontSize: 14,
+    color: colors.slate,
+    marginTop: spacing.xs,
   },
   input: {
     backgroundColor: colors.white,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: colors.paperWarm,
+    borderColor: colors.paperEdge,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
     fontFamily: fonts.body,
@@ -213,7 +283,7 @@ const styles = StyleSheet.create({
   modalActions: {
     flexDirection: 'row',
     gap: spacing.md,
-    marginTop: spacing.sm,
+    marginTop: spacing.md,
   },
   secondary: {
     flex: 1,
@@ -231,6 +301,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     alignItems: 'center',
     paddingVertical: spacing.md,
+    ...shadows.soft,
   },
   primaryText: {
     fontFamily: fonts.bodySemi,

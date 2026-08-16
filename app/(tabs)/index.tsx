@@ -10,7 +10,7 @@ import { ScreenBackground } from '@/src/components/ScreenBackground';
 import { SwipeDeck } from '@/src/components/SwipeDeck';
 import { deckLabel } from '@/src/db/decks';
 import { useStudySession } from '@/src/hooks/useStudySession';
-import { colors, fonts, spacing } from '@/src/theme';
+import { colors, fonts, radius, spacing } from '@/src/theme';
 
 export default function StudyScreen() {
   const {
@@ -24,6 +24,7 @@ export default function StudyScreen() {
     select,
     reveal,
     grade,
+    answerChoice,
   } = useStudySession();
 
   if (loading) {
@@ -68,9 +69,18 @@ export default function StudyScreen() {
     );
   }
 
+  const isChoice = current.format === 'choice';
+
   return (
     <ScreenBackground heroImage={require('../../assets/images/hero-study.png')}>
-      <BrandHeader subtitle="Tap to reveal · swipe to grade" light />
+      <BrandHeader
+        subtitle={
+          isChoice
+            ? 'Choose the matching word'
+            : 'Tap to reveal · swipe to grade'
+        }
+        light
+      />
       <DeckSwitcher
         decks={decks}
         activeDeckId={activeDeck.id}
@@ -78,23 +88,29 @@ export default function StudyScreen() {
         light
       />
       <Animated.View
-        key={current.card.id + current.mode + activeDeck.id}
+        key={current.card.id + current.mode + current.format + activeDeck.id}
         entering={FadeInDown.duration(320)}
         style={styles.stage}
       >
-        <SwipeDeck enabled={revealed} onGrade={grade}>
+        <SwipeDeck
+          enabled={!isChoice && revealed}
+          onGrade={grade}
+        >
           <FlashCardFace
             prompt={current}
             revealed={revealed}
             progressLabel={progressLabel}
             onReveal={reveal}
+            onChoose={(option) => void answerChoice(option)}
           />
         </SwipeDeck>
-        <GradeButtons
-          visible={revealed}
-          onWrong={() => void grade(false)}
-          onCorrect={() => void grade(true)}
-        />
+        {!isChoice ? (
+          <GradeButtons
+            visible={revealed}
+            onWrong={() => void grade(false)}
+            onCorrect={() => void grade(true)}
+          />
+        ) : null}
         <Text style={styles.poolHint}>
           {deckLabel(activeDeck)} · {poolSize} card
           {poolSize === 1 ? '' : 's'}
@@ -116,9 +132,16 @@ const styles = StyleSheet.create({
   },
   poolHint: {
     marginTop: spacing.md,
+    alignSelf: 'center',
     textAlign: 'center',
-    fontFamily: fonts.body,
-    fontSize: 14,
-    color: colors.mist,
+    fontFamily: fonts.bodySemi,
+    fontSize: 13,
+    letterSpacing: 0.3,
+    color: colors.paper,
+    backgroundColor: colors.glassDark,
+    overflow: 'hidden',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.md,
   },
 });

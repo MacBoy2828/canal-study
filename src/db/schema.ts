@@ -20,6 +20,14 @@ async function columnNames(
   return rows.map((r) => r.name);
 }
 
+export const DATABASE_NAME = 'canal-study.db';
+
+/**
+ * Opens / migrates the on-device database.
+ * Safe across APK updates: Android keeps app private storage when the same
+ * package (`com.canalstudy.app`) is updated in place. Migrations only add
+ * tables/columns or copy rows — they must never wipe user cards.
+ */
 export async function initDatabase(db: SQLiteDatabase): Promise<void> {
   await db.execAsync(`
     PRAGMA journal_mode = WAL;

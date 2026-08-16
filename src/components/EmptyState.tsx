@@ -1,10 +1,11 @@
 import { Image } from 'expo-image';
-import { ImageSourcePropType, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import Animated, { FadeIn, FadeInUp, ZoomIn } from 'react-native-reanimated';
 
-import { colors, fonts, spacing } from '@/src/theme';
+import { colors, fonts, motion, radius, shadows, spacing } from '@/src/theme';
 
 type Props = {
-  image: ImageSourcePropType;
+  image: number;
   title: string;
   message: string;
 };
@@ -12,28 +13,49 @@ type Props = {
 export function EmptyState({ image, title, message }: Props) {
   return (
     <View style={styles.wrap}>
-      <Image source={image} style={styles.image} contentFit="contain" />
-      <Text style={styles.title}>{title}</Text>
-      <Text style={styles.message}>{message}</Text>
+      <Animated.View
+        entering={ZoomIn.duration(motion.lush).springify().damping(14)}
+        style={styles.imageWrap}
+      >
+        <Image source={image} style={styles.image} contentFit="cover" />
+      </Animated.View>
+      <Animated.Text
+        entering={FadeInUp.delay(80).duration(motion.normal)}
+        style={styles.title}
+      >
+        {title}
+      </Animated.Text>
+      <Animated.Text
+        entering={FadeIn.delay(140).duration(motion.normal)}
+        style={styles.message}
+      >
+        {message}
+      </Animated.Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   wrap: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: spacing.xl,
     gap: spacing.md,
+    paddingHorizontal: spacing.md,
+  },
+  imageWrap: {
+    ...shadows.lift,
+    borderRadius: radius.lg,
   },
   image: {
     width: 220,
     height: 220,
-    borderRadius: 24,
+    borderRadius: radius.lg,
   },
   title: {
-    fontFamily: fonts.display,
-    fontSize: 28,
+    fontFamily: fonts.displayBold,
+    fontSize: 30,
+    letterSpacing: -0.4,
     color: colors.ink,
     textAlign: 'center',
   },
@@ -43,6 +65,6 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     color: colors.slate,
     textAlign: 'center',
-    maxWidth: 300,
+    maxWidth: 320,
   },
 });

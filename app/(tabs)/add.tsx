@@ -4,7 +4,6 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
-  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -15,12 +14,13 @@ import {
 import { BrandHeader } from '@/src/components/BrandHeader';
 import { DeckSwitcher } from '@/src/components/DeckSwitcher';
 import { EmptyState } from '@/src/components/EmptyState';
+import { PressableScale } from '@/src/components/PressableScale';
 import { ScreenBackground } from '@/src/components/ScreenBackground';
 import { Toast } from '@/src/components/Toast';
 import { deckLabel } from '@/src/db/decks';
 import { useActiveCards } from '@/src/hooks/useCards';
 import { useDecks } from '@/src/hooks/useDecks';
-import { colors, fonts, radius, spacing } from '@/src/theme';
+import { colors, fonts, radius, shadows, spacing } from '@/src/theme';
 
 export default function AddScreen() {
   const { decks, activeDeck, select } = useDecks();
@@ -150,7 +150,7 @@ export default function AddScreen() {
             }}
             onSubmitEditing={() => void onSave()}
           />
-          <Pressable
+          <PressableScale
             onPress={() => void onSave()}
             disabled={saving}
             style={[styles.button, saving && styles.buttonDisabled]}
@@ -158,7 +158,7 @@ export default function AddScreen() {
             <Text style={styles.buttonText}>
               {saving ? 'Saving…' : 'Add card'}
             </Text>
-          </Pressable>
+          </PressableScale>
         </ScrollView>
       </KeyboardAvoidingView>
       <Toast message={toast ?? ''} visible={!!toast} onHide={hideToast} />
@@ -177,9 +177,10 @@ const styles = StyleSheet.create({
   },
   illustration: {
     width: '100%',
-    height: 160,
+    height: 168,
     borderRadius: radius.lg,
     marginBottom: spacing.md,
+    ...shadows.lift,
   },
   label: {
     fontFamily: fonts.bodySemi,
@@ -191,19 +192,21 @@ const styles = StyleSheet.create({
     backgroundColor: colors.paper,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: colors.paperWarm,
+    borderColor: colors.paperEdge,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
     fontFamily: fonts.body,
     fontSize: 18,
     color: colors.ink,
+    ...shadows.soft,
   },
   button: {
     marginTop: spacing.lg,
     backgroundColor: colors.orange,
     borderRadius: radius.md,
-    paddingVertical: spacing.md,
+    paddingVertical: 15,
     alignItems: 'center',
+    ...shadows.soft,
   },
   buttonDisabled: {
     opacity: 0.6,

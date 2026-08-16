@@ -13,8 +13,9 @@ import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 
-import { initDatabase } from '@/src/db/schema';
+import { DATABASE_NAME, initDatabase } from '@/src/db/schema';
 import { DecksProvider } from '@/src/hooks/useDecks';
+import { ReminderBootstrap } from '@/src/reminders/ReminderBootstrap';
 import { colors } from '@/src/theme';
 import { UpdateProvider } from '@/src/updates/UpdateProvider';
 
@@ -51,8 +52,9 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.mist }}>
-      <SQLiteProvider databaseName="canal-study.db" onInit={initDatabase}>
+      <SQLiteProvider databaseName={DATABASE_NAME} onInit={initDatabase}>
         <DecksProvider>
+          <ReminderBootstrap />
           <UpdateProvider>
             <StatusBar style="dark" />
             <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.mist } }}>

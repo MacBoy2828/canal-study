@@ -1,8 +1,9 @@
-import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
+import { ScrollView, StyleSheet, Text } from 'react-native';
 
+import { PressableScale } from '@/src/components/PressableScale';
 import { deckLabel } from '@/src/db/decks';
 import type { Deck } from '@/src/db/types';
-import { colors, fonts, radius, spacing } from '@/src/theme';
+import { colors, fonts, radius, shadows, spacing } from '@/src/theme';
 
 type Props = {
   decks: Deck[];
@@ -29,7 +30,7 @@ export function DeckSwitcher({
       {decks.map((deck) => {
         const active = deck.id === activeDeckId;
         return (
-          <Pressable
+          <PressableScale
             key={deck.id}
             onPress={() => onSelect(deck.id)}
             style={[
@@ -37,6 +38,7 @@ export function DeckSwitcher({
               light && styles.chipLight,
               active && (light ? styles.chipActiveLight : styles.chipActive),
             ]}
+            accessibilityLabel={`Select ${deckLabel(deck)}`}
           >
             <Text
               style={[
@@ -47,7 +49,7 @@ export function DeckSwitcher({
             >
               {deckLabel(deck)}
             </Text>
-          </Pressable>
+          </PressableScale>
         );
       })}
     </ScrollView>
@@ -65,23 +67,24 @@ const styles = StyleSheet.create({
   },
   chip: {
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    paddingVertical: 10,
     borderRadius: radius.md,
-    backgroundColor: colors.paper,
+    backgroundColor: colors.glass,
     borderWidth: 1,
-    borderColor: colors.paperWarm,
+    borderColor: colors.paperEdge,
+    ...shadows.soft,
   },
   chipLight: {
-    backgroundColor: 'rgba(247, 243, 236, 0.18)',
-    borderColor: 'rgba(247, 243, 236, 0.35)',
+    backgroundColor: colors.glassDark,
+    borderColor: 'rgba(255,248,240,0.28)',
   },
   chipActive: {
     backgroundColor: colors.orange,
-    borderColor: colors.orange,
+    borderColor: colors.orangeDeep,
   },
   chipActiveLight: {
     backgroundColor: colors.orange,
-    borderColor: colors.orange,
+    borderColor: colors.orangeSoft,
   },
   chipText: {
     fontFamily: fonts.bodySemi,

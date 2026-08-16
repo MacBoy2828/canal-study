@@ -22,8 +22,14 @@
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "android.permission.INTERNET",
-        "android.permission.REQUEST_INSTALL_PACKAGES"
-      ]
+        "android.permission.REQUEST_INSTALL_PACKAGES",
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.SCHEDULE_EXACT_ALARM",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.VIBRATE",
+        "android.permission.WAKE_LOCK"
+      ],
+      "softwareKeyboardLayoutMode": "resize"
     },
     "web": {
       "bundler": "metro",

@@ -1,14 +1,21 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
+import { StyleSheet, Text, View } from 'react-native';
+import Animated, {
+  FadeIn,
+  FadeInDown,
+  FadeOut,
+  ZoomIn,
+} from 'react-native-reanimated';
 
-import { colors, fonts, radius, spacing } from '@/src/theme';
+import { PressableScale } from '@/src/components/PressableScale';
 import type { StudyPrompt } from '@/src/hooks/useStudySession';
+import { colors, fonts, motion, radius, shadows, spacing } from '@/src/theme';
 
 type Props = {
   prompt: StudyPrompt;
   revealed: boolean;
   progressLabel: string;
   onReveal: () => void;
+  onChoose?: (option: string) => void;
 };
 
 export function FlashCardFace({
@@ -16,36 +23,77 @@ export function FlashCardFace({
   revealed,
   progressLabel,
   onReveal,
+  onChoose,
 }: Props) {
+  const isChoice = prompt.format === 'choice' && !!prompt.options?.length;
+
   return (
-    <Pressable
-      onPress={revealed ? undefined : onReveal}
+    <PressableScale
+      onPress={revealed || isChoice ? undefined : onReveal}
       style={styles.pressable}
-      accessibilityRole="button"
       accessibilityLabel={
-        revealed ? 'Answer revealed' : 'Tap to reveal the answer'
+        isChoice
+          ? 'Choose the correct answer'
+          : revealed
+            ? 'Answer revealed'
+            : 'Tap to reveal the answer'
       }
     >
       <View style={styles.card}>
-        <Text style={styles.progress}>{progressLabel}</Text>
-        <Text style={styles.mode}>
-          {prompt.promptLabel} → {prompt.answerLabel}
-        </Text>
+        <View style={styles.topRow}>
+          <Text style={styles.mode}>
+            {isChoice ? 'Choice · ' : ''}
+            {prompt.promptLabel} → {prompt.answerLabel}
+          </Text>
+          <View style={styles.progressPill}>
+            <Text style={styles.progress}>{progressLabel}</Text>
+          </View>
+        </View>
 
-        {!revealed ? (
+        {isChoice ? (
           <Animated.View
-            key="front"
-            entering={FadeIn.duration(220)}
-            exiting={FadeOut.duration(160)}
+            key="choice"
+            entering={FadeIn.duration(motion.normal)}
             style={styles.face}
           >
             <Text style={styles.prompt}>{prompt.prompt}</Text>
-            <Text style={styles.hint}>Tap to reveal</Text>
+            <Text style={styles.hint}>Pick the matching word</Text>
+            <View style={styles.options}>
+              {prompt.options!.map((option, index) => (
+                <Animated.View
+                  key={option}
+                  entering={FadeInDown.delay(80 + index * 50)
+                    .duration(motion.normal)
+                    .springify()
+                    .damping(16)}
+                >
+                  <PressableScale
+                    onPress={() => onChoose?.(option)}
+                    style={styles.option}
+                    accessibilityLabel={`Answer ${option}`}
+                  >
+                    <Text style={styles.optionText}>{option}</Text>
+                  </PressableScale>
+                </Animated.View>
+              ))}
+            </View>
+          </Animated.View>
+        ) : !revealed ? (
+          <Animated.View
+            key="front"
+            entering={ZoomIn.duration(motion.normal).springify().damping(15)}
+            exiting={FadeOut.duration(140)}
+            style={styles.face}
+          >
+            <Text style={styles.prompt}>{prompt.prompt}</Text>
+            <View style={styles.hintPill}>
+              <Text style={styles.hint}>Tap to reveal</Text>
+            </View>
           </Animated.View>
         ) : (
           <Animated.View
             key="back"
-            entering={FadeIn.duration(240)}
+            entering={FadeIn.duration(motion.normal)}
             style={styles.face}
           >
             <Text style={styles.promptSmall}>{prompt.prompt}</Text>
@@ -57,7 +105,7 @@ export function FlashCardFace({
           </Animated.View>
         )}
       </View>
-    </Pressable>
+    </PressableScale>
   );
 }
 
@@ -68,46 +116,55 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.paper,
     borderRadius: radius.card,
-    minHeight: 360,
+    minHeight: 380,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.xl,
     borderWidth: 1,
-    borderColor: colors.paperWarm,
-    shadowColor: colors.ink,
-    shadowOpacity: 0.18,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: 12 },
-    elevation: 8,
+    borderColor: colors.paperEdge,
+    ...shadows.float,
     justifyContent: 'center',
+    overflow: 'hidden',
   },
-  progress: {
-    position: 'absolute',
-    top: spacing.md,
-    right: spacing.lg,
-    fontFamily: fonts.bodyMedium,
-    fontSize: 14,
-    color: colors.slate,
-  },
-  mode: {
+  topRow: {
     position: 'absolute',
     top: spacing.md,
     left: spacing.lg,
+    right: spacing.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.sm,
+  },
+  mode: {
+    flex: 1,
     fontFamily: fonts.bodySemi,
-    fontSize: 13,
-    letterSpacing: 0.4,
+    fontSize: 12,
+    letterSpacing: 0.6,
     textTransform: 'uppercase',
     color: colors.orange,
+  },
+  progressPill: {
+    backgroundColor: colors.mistSoft,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: radius.sm,
+  },
+  progress: {
+    fontFamily: fonts.bodySemi,
+    fontSize: 13,
+    color: colors.slate,
   },
   face: {
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.md,
-    paddingTop: spacing.lg,
+    paddingTop: spacing.xl,
   },
   prompt: {
     fontFamily: fonts.display,
-    fontSize: 40,
-    lineHeight: 48,
+    fontSize: 42,
+    lineHeight: 50,
+    letterSpacing: -0.6,
     color: colors.ink,
     textAlign: 'center',
   },
@@ -118,23 +175,53 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   divider: {
-    width: 48,
-    height: 2,
-    backgroundColor: colors.orangeSoft,
-    borderRadius: 2,
+    width: 56,
+    height: 3,
+    backgroundColor: colors.orange,
+    borderRadius: 3,
+    opacity: 0.85,
   },
   answer: {
     fontFamily: fonts.displayBold,
-    fontSize: 36,
-    lineHeight: 44,
+    fontSize: 38,
+    lineHeight: 46,
+    letterSpacing: -0.5,
     color: colors.ink,
     textAlign: 'center',
   },
   hint: {
-    marginTop: spacing.md,
-    fontFamily: fonts.body,
+    fontFamily: fonts.bodyMedium,
     fontSize: 15,
     color: colors.slate,
+    textAlign: 'center',
+  },
+  hintPill: {
+    marginTop: spacing.sm,
+    backgroundColor: colors.orangeGlow,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.md,
+  },
+  options: {
+    width: '100%',
+    gap: spacing.sm,
+    marginTop: spacing.sm,
+  },
+  option: {
+    width: '100%',
+    backgroundColor: colors.white,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.paperEdge,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+    alignItems: 'center',
+    ...shadows.soft,
+  },
+  optionText: {
+    fontFamily: fonts.bodySemi,
+    fontSize: 18,
+    color: colors.ink,
     textAlign: 'center',
   },
 });

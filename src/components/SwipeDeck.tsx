@@ -2,6 +2,8 @@ import { ReactNode } from 'react';
 import { Dimensions, StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
+  Extrapolation,
+  interpolate,
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
@@ -9,7 +11,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-import { colors } from '@/src/theme';
+import { colors, radius } from '@/src/theme';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.28;
@@ -30,49 +32,72 @@ export function SwipeDeck({ children, enabled, onGrade }: Props) {
     translateX.value = 0;
     translateY.value = 0;
     entering.value = 0;
-    entering.value = withTiming(1, { duration: 280 });
+    entering.value = withTiming(1, { duration: 320 });
   };
 
   const pan = Gesture.Pan()
     .enabled(enabled)
     .onUpdate((event) => {
       translateX.value = event.translationX;
-      translateY.value = event.translationY * 0.15;
+      translateY.value = event.translationY * 0.12;
     })
     .onEnd((event) => {
       if (event.translationX > SWIPE_THRESHOLD) {
-        translateX.value = withTiming(SCREEN_WIDTH * 1.2, { duration: 220 }, () => {
-          runOnJS(finish)(true);
-        });
+        translateX.value = withTiming(
+          SCREEN_WIDTH * 1.25,
+          { duration: 240 },
+          () => {
+            runOnJS(finish)(true);
+          }
+        );
       } else if (event.translationX < -SWIPE_THRESHOLD) {
-        translateX.value = withTiming(-SCREEN_WIDTH * 1.2, { duration: 220 }, () => {
-          runOnJS(finish)(false);
-        });
+        translateX.value = withTiming(
+          -SCREEN_WIDTH * 1.25,
+          { duration: 240 },
+          () => {
+            runOnJS(finish)(false);
+          }
+        );
       } else {
-        translateX.value = withSpring(0);
-        translateY.value = withSpring(0);
+        translateX.value = withSpring(0, { damping: 16, stiffness: 180 });
+        translateY.value = withSpring(0, { damping: 16, stiffness: 180 });
       }
     });
 
   const cardStyle = useAnimatedStyle(() => {
-    const rotate = `${translateX.value / 18}deg`;
+    const rotate = `${interpolate(
+      translateX.value,
+      [-SCREEN_WIDTH, 0, SCREEN_WIDTH],
+      [-14, 0, 14],
+      Extrapolation.CLAMP
+    )}deg`;
     return {
       transform: [
         { translateX: translateX.value },
         { translateY: translateY.value },
         { rotate },
-        { scale: 0.96 + entering.value * 0.04 },
+        { scale: 0.94 + entering.value * 0.06 },
       ],
-      opacity: 0.85 + entering.value * 0.15,
+      opacity: 0.75 + entering.value * 0.25,
     };
   });
 
   const correctOverlay = useAnimatedStyle(() => ({
-    opacity: Math.min(1, Math.max(0, translateX.value / SWIPE_THRESHOLD)),
+    opacity: interpolate(
+      translateX.value,
+      [0, SWIPE_THRESHOLD],
+      [0, 1],
+      Extrapolation.CLAMP
+    ),
   }));
 
   const wrongOverlay = useAnimatedStyle(() => ({
-    opacity: Math.min(1, Math.max(0, -translateX.value / SWIPE_THRESHOLD)),
+    opacity: interpolate(
+      translateX.value,
+      [0, -SWIPE_THRESHOLD],
+      [0, 1],
+      Extrapolation.CLAMP
+    ),
   }));
 
   return (
@@ -98,16 +123,16 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFill,
-    borderRadius: 28,
+    borderRadius: radius.card,
   },
   correct: {
-    backgroundColor: 'rgba(47, 107, 79, 0.22)',
-    borderWidth: 3,
+    backgroundColor: colors.correctSoft,
+    borderWidth: 2,
     borderColor: colors.correct,
   },
   wrong: {
-    backgroundColor: 'rgba(163, 59, 59, 0.22)',
-    borderWidth: 3,
+    backgroundColor: colors.wrongSoft,
+    borderWidth: 2,
     borderColor: colors.wrong,
   },
 });

@@ -18,12 +18,15 @@ import * as Application from 'expo-application';
 import Constants from 'expo-constants';
 
 import { BrandHeader } from '@/src/components/BrandHeader';
+import { PressableScale } from '@/src/components/PressableScale';
 import { ScreenBackground } from '@/src/components/ScreenBackground';
+import { Surface } from '@/src/components/Surface';
 import { Toast } from '@/src/components/Toast';
 import { deckLabel } from '@/src/db/decks';
 import { useDecks } from '@/src/hooks/useDecks';
 import { useStudyReminder } from '@/src/hooks/useStudyReminder';
-import { colors, fonts, radius, spacing } from '@/src/theme';
+import { openExactAlarmSettings } from '@/src/reminders/studyReminder';
+import { colors, fonts, radius, shadows, spacing } from '@/src/theme';
 import { useUpdate } from '@/src/updates/UpdateProvider';
 
 const GITHUB_REPO_URL = 'https://github.com/MacBoy2828/canal-study';
@@ -114,6 +117,19 @@ export default function SettingsScreen() {
       showPermissionHelp();
       return;
     }
+    if (next && Platform.OS === 'android' && Platform.Version >= 31) {
+      Alert.alert(
+        'Allow exact alarms',
+        'Android may delay reminders until you open the app unless Canal Study can use exact alarms. Allow alarms & reminders for this app.',
+        [
+          { text: 'Later', style: 'cancel' },
+          {
+            text: 'Open alarm settings',
+            onPress: () => void openExactAlarmSettings(),
+          },
+        ]
+      );
+    }
     setToast(
       next
         ? `Daily reminder set for ${reminder.timeLabel}`
@@ -176,7 +192,7 @@ export default function SettingsScreen() {
         keyExtractor={(item) => item.id}
         ListHeaderComponent={
           <View style={styles.headerBlock}>
-            <View style={styles.card}>
+            <Surface delay={40}>
               <Text style={styles.title}>About</Text>
               <Text style={styles.versionLine}>
                 Canal Study {localVersion}
@@ -186,12 +202,12 @@ export default function SettingsScreen() {
                 Open-source flashcards for any language pair. Source code and
                 releases are on GitHub.
               </Text>
-              <Pressable onPress={openGitHub} style={styles.secondaryButton}>
+              <PressableScale onPress={openGitHub} style={styles.secondaryButton}>
                 <Text style={styles.secondaryButtonText}>
                   github.com/MacBoy2828/canal-study
                 </Text>
-              </Pressable>
-              <Pressable
+              </PressableScale>
+              <PressableScale
                 onPress={() => void checkForUpdate({ interactive: true })}
                 disabled={checking}
                 style={[styles.button, checking && styles.buttonDisabled]}
@@ -203,10 +219,10 @@ export default function SettingsScreen() {
                       ? 'Downloading…'
                       : 'Check for updates'}
                 </Text>
-              </Pressable>
-            </View>
+              </PressableScale>
+            </Surface>
 
-            <View style={styles.card}>
+            <Surface delay={100}>
               <Text style={styles.title}>New language pair</Text>
               <Text style={styles.copy}>
                 Source is what you are learning. Destination is how you
@@ -230,12 +246,15 @@ export default function SettingsScreen() {
                 style={styles.input}
                 autoCapitalize="words"
               />
-              <Pressable onPress={() => void onCreateDeck()} style={styles.button}>
+              <PressableScale
+                onPress={() => void onCreateDeck()}
+                style={styles.button}
+              >
                 <Text style={styles.buttonText}>Add language pair</Text>
-              </Pressable>
-            </View>
+              </PressableScale>
+            </Surface>
 
-            <View style={styles.card}>
+            <Surface delay={160}>
               <Text style={styles.title}>Display limit</Text>
               <Text style={styles.copy}>
                 After a card is shown this many times in the active pair, it
@@ -249,18 +268,23 @@ export default function SettingsScreen() {
                 keyboardType="number-pad"
                 style={styles.input}
               />
-              <Pressable onPress={() => void onSaveLimit()} style={styles.button}>
+              <PressableScale
+                onPress={() => void onSaveLimit()}
+                style={styles.button}
+              >
                 <Text style={styles.buttonText}>
                   {limitSaved ? 'Saved' : 'Save limit'}
                 </Text>
-              </Pressable>
-            </View>
+              </PressableScale>
+            </Surface>
 
             {Platform.OS !== 'web' ? (
-              <View style={styles.card}>
+              <Surface delay={220}>
                 <Text style={styles.title}>Daily reminder</Text>
                 <Text style={styles.copy}>
-                  Get a local notification each day at the time you choose.
+                  Get a local notification each day at the time you choose,
+                  even when the app is closed. On newer Android phones, allow
+                  Alarms & reminders for Canal Study so it is not delayed.
                 </Text>
                 <View style={styles.reminderRow}>
                   <Text style={styles.reminderLabel}>Remind me to study</Text>
@@ -277,7 +301,7 @@ export default function SettingsScreen() {
                     }
                   />
                 </View>
-                <Pressable
+                <PressableScale
                   onPress={openTimePicker}
                   disabled={reminder.loading || reminder.busy}
                   style={styles.secondaryButton}
@@ -285,7 +309,7 @@ export default function SettingsScreen() {
                   <Text style={styles.secondaryButtonText}>
                     Reminder time · {reminder.timeLabel}
                   </Text>
-                </Pressable>
+                </PressableScale>
                 {showTimePicker ? (
                   <DateTimePicker
                     value={reminderPickerDate}
@@ -296,14 +320,14 @@ export default function SettingsScreen() {
                   />
                 ) : null}
                 {Platform.OS === 'ios' && showTimePicker ? (
-                  <Pressable
+                  <PressableScale
                     onPress={() => void confirmIosTime()}
                     style={styles.button}
                   >
                     <Text style={styles.buttonText}>Done</Text>
-                  </Pressable>
+                  </PressableScale>
                 ) : null}
-              </View>
+              </Surface>
             ) : null}
 
             <Text style={styles.sectionTitle}>Your language pairs</Text>
@@ -318,7 +342,10 @@ export default function SettingsScreen() {
           const active = item.id === activeDeck?.id;
           return (
             <View style={[styles.pairRow, active && styles.pairRowActive]}>
-              <Pressable style={styles.pairMain} onPress={() => void select(item.id)}>
+              <Pressable
+                style={styles.pairMain}
+                onPress={() => void select(item.id)}
+              >
                 <Text style={styles.pairLabel}>{deckLabel(item)}</Text>
                 <Text style={styles.pairMeta}>
                   {active ? 'Active' : 'Tap to switch'}
@@ -359,15 +386,10 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     marginBottom: spacing.sm,
   },
-  card: {
-    backgroundColor: colors.paper,
-    borderRadius: radius.lg,
-    padding: spacing.lg,
-    gap: spacing.sm,
-  },
   title: {
-    fontFamily: fonts.display,
+    fontFamily: fonts.displayBold,
     fontSize: 24,
+    letterSpacing: -0.3,
     color: colors.ink,
   },
   versionLine: {
@@ -392,7 +414,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: colors.paperWarm,
+    borderColor: colors.paperEdge,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
     fontFamily: fonts.body,
@@ -405,6 +427,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     paddingVertical: spacing.md,
     alignItems: 'center',
+    ...shadows.soft,
   },
   buttonDisabled: {
     opacity: 0.6,
@@ -417,7 +440,8 @@ const styles = StyleSheet.create({
   secondaryButton: {
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: colors.mistDeep,
+    borderColor: colors.paperEdge,
+    backgroundColor: colors.mistSoft,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.md,
     alignItems: 'center',
@@ -442,6 +466,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontFamily: fonts.display,
     fontSize: 22,
+    letterSpacing: -0.2,
     color: colors.ink,
     marginTop: spacing.sm,
   },
@@ -452,15 +477,17 @@ const styles = StyleSheet.create({
   },
   pairRow: {
     backgroundColor: colors.paper,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     padding: spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: colors.paperWarm,
+    borderColor: colors.paperEdge,
+    ...shadows.soft,
   },
   pairRowActive: {
     borderColor: colors.orange,
+    backgroundColor: colors.white,
   },
   pairMain: {
     flex: 1,

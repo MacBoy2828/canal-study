@@ -1,13 +1,14 @@
 import {
   ActivityIndicator,
   Modal,
-  Pressable,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
-import { colors, fonts, radius, spacing } from '@/src/theme';
+import { PressableScale } from '@/src/components/PressableScale';
+import { colors, fonts, motion, radius, shadows, spacing } from '@/src/theme';
 import type { DownloadProgress } from '@/src/updates/installer';
 import type { LatestRelease } from '@/src/updates/github';
 import type { UpdateStatus } from '@/src/updates/useAppUpdate';
@@ -36,7 +37,7 @@ function statusCopy(
     case 'available':
       return {
         title: 'Update available',
-        body: `Version ${latest?.version ?? ''} is ready (you have ${localVersion}). ${
+        body: `Version ${latest?.version ?? ''} is ready (you have ${localVersion}). Your cards and settings stay on this phone when you update — do not uninstall first.${
           latest?.body?.trim()
             ? `\n\n${latest.body.trim().slice(0, 280)}`
             : ''
@@ -96,7 +97,10 @@ export function UpdateModal({
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onDismiss}>
       <View style={styles.backdrop}>
-        <View style={styles.card}>
+        <Animated.View
+          entering={FadeInDown.duration(motion.lush).springify().damping(18)}
+          style={styles.card}
+        >
           <Text style={styles.title}>{copy.title}</Text>
           <Text style={styles.body}>{copy.body}</Text>
 
@@ -122,25 +126,29 @@ export function UpdateModal({
           ) : null}
 
           <View style={styles.actions}>
-            <Pressable onPress={onDismiss} style={styles.secondary} disabled={status === 'downloading'}>
+            <PressableScale
+              onPress={onDismiss}
+              style={styles.secondary}
+              disabled={status === 'downloading'}
+            >
               <Text style={styles.secondaryText}>
                 {canInstall ? 'Later' : 'Close'}
               </Text>
-            </Pressable>
+            </PressableScale>
 
             {canInstall ? (
-              <Pressable onPress={onConfirm} style={styles.primary}>
+              <PressableScale onPress={onConfirm} style={styles.primary}>
                 <Text style={styles.primaryText}>Download & install</Text>
-              </Pressable>
+              </PressableScale>
             ) : null}
 
             {showRetry ? (
-              <Pressable onPress={onRetryCheck} style={styles.primary}>
+              <PressableScale onPress={onRetryCheck} style={styles.primary}>
                 <Text style={styles.primaryText}>Check again</Text>
-              </Pressable>
+              </PressableScale>
             ) : null}
           </View>
-        </View>
+        </Animated.View>
       </View>
     </Modal>
   );
@@ -155,13 +163,17 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: colors.paper,
-    borderRadius: radius.lg,
+    borderRadius: radius.sheet,
     padding: spacing.lg,
     gap: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.paperEdge,
+    ...shadows.float,
   },
   title: {
-    fontFamily: fonts.display,
+    fontFamily: fonts.displayBold,
     fontSize: 24,
+    letterSpacing: -0.3,
     color: colors.ink,
   },
   body: {
@@ -172,7 +184,7 @@ const styles = StyleSheet.create({
   },
   progressTrack: {
     height: 8,
-    borderRadius: 999,
+    borderRadius: radius.sm,
     backgroundColor: colors.mist,
     overflow: 'hidden',
     marginTop: spacing.sm,
@@ -210,6 +222,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.md,
+    ...shadows.soft,
   },
   primaryText: {
     fontFamily: fonts.bodySemi,

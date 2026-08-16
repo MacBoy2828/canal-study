@@ -2,12 +2,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { colors, fonts } from '@/src/theme';
+import { colors, fonts, shadows } from '@/src/theme';
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
-  const bottomPad = Math.max(insets.bottom, 10);
-  const tabBarHeight = 56 + bottomPad;
+  const bottomPad = Math.max(insets.bottom, 12);
+  const tabBarHeight = 60 + bottomPad;
 
   return (
     <Tabs
@@ -17,14 +17,17 @@ export default function TabLayout() {
         tabBarInactiveTintColor: colors.tabInactive,
         tabBarStyle: {
           backgroundColor: colors.paper,
-          borderTopColor: colors.paperWarm,
+          borderTopColor: colors.paperEdge,
+          borderTopWidth: 1,
           height: tabBarHeight,
-          paddingTop: 6,
+          paddingTop: 8,
           paddingBottom: bottomPad,
+          ...shadows.soft,
         },
         tabBarLabelStyle: {
-          fontFamily: fonts.bodyMedium,
-          fontSize: 12,
+          fontFamily: fonts.bodySemi,
+          fontSize: 11,
+          letterSpacing: 0.2,
         },
       }}
     >
@@ -32,8 +35,12 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Study',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="albums-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons
+              name={focused ? 'albums' : 'albums-outline'}
+              size={size}
+              color={color}
+            />
           ),
         }}
       />
@@ -41,8 +48,12 @@ export default function TabLayout() {
         name="add"
         options={{
           title: 'Add',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="add-circle-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons
+              name={focused ? 'add-circle' : 'add-circle-outline'}
+              size={size}
+              color={color}
+            />
           ),
         }}
       />
@@ -50,8 +61,12 @@ export default function TabLayout() {
         name="cards"
         options={{
           title: 'Cards',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="list-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons
+              name={focused ? 'list' : 'list-outline'}
+              size={size}
+              color={color}
+            />
           ),
         }}
       />
@@ -59,8 +74,12 @@ export default function TabLayout() {
         name="archive"
         options={{
           title: 'Archive',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="archive-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons
+              name={focused ? 'archive' : 'archive-outline'}
+              size={size}
+              color={color}
+            />
           ),
         }}
       />
@@ -68,8 +87,12 @@ export default function TabLayout() {
         name="settings"
         options={{
           title: 'Settings',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings-outline" size={size} color={color} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons
+              name={focused ? 'settings' : 'settings-outline'}
+              size={size}
+              color={color}
+            />
           ),
         }}
       />

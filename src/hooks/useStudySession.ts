@@ -6,41 +6,93 @@ import * as cardsDb from '@/src/db/cards';
 import type { Deck, Flashcard, StudyMode } from '@/src/db/types';
 import { useDecks } from '@/src/hooks/useDecks';
 
+export type StudyFormat = 'flashcard' | 'choice';
+
 export type StudyPrompt = {
   card: Flashcard;
   mode: StudyMode;
+  format: StudyFormat;
   prompt: string;
   answer: string;
   promptLabel: string;
   answerLabel: string;
+  /** Shuffled options for multiple-choice prompts. */
+  options?: string[];
 };
 
 function pickRandom<T>(items: T[]): T {
   return items[Math.floor(Math.random() * items.length)];
 }
 
+function shuffle<T>(items: T[]): T[] {
+  const copy = [...items];
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+function uniqueAnswers(values: string[], correct: string): string[] {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const value of values) {
+    const trimmed = value.trim();
+    if (!trimmed) continue;
+    const key = trimmed.toLocaleLowerCase();
+    if (key === correct.trim().toLocaleLowerCase()) continue;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    result.push(trimmed);
+  }
+  return result;
+}
+
 function buildPrompt(
   card: Flashcard,
   mode: StudyMode,
-  deck: Deck
+  deck: Deck,
+  pool: Flashcard[]
 ): StudyPrompt {
-  if (mode === 'source-to-dest') {
+  const base =
+    mode === 'source-to-dest'
+      ? {
+          prompt: card.sourceText,
+          answer: card.destinationText,
+          promptLabel: deck.sourceLanguage,
+          answerLabel: deck.destinationLanguage,
+        }
+      : {
+          prompt: card.destinationText,
+          answer: card.sourceText,
+          promptLabel: deck.destinationLanguage,
+          answerLabel: deck.sourceLanguage,
+        };
+
+  const wantChoice = Math.random() < 0.25;
+  const distractorPool = uniqueAnswers(
+    pool.map((item) =>
+      mode === 'source-to-dest' ? item.destinationText : item.sourceText
+    ),
+    base.answer
+  );
+
+  if (wantChoice && distractorPool.length >= 3) {
+    const distractors = shuffle(distractorPool).slice(0, 3);
     return {
       card,
       mode,
-      prompt: card.sourceText,
-      answer: card.destinationText,
-      promptLabel: deck.sourceLanguage,
-      answerLabel: deck.destinationLanguage,
+      format: 'choice',
+      ...base,
+      options: shuffle([base.answer, ...distractors]),
     };
   }
+
   return {
     card,
     mode,
-    prompt: card.destinationText,
-    answer: card.sourceText,
-    promptLabel: deck.destinationLanguage,
-    answerLabel: deck.sourceLanguage,
+    format: 'flashcard',
+    ...base,
   };
 }
 
@@ -61,7 +113,7 @@ export function useStudySession() {
     const card = pickRandom(cards);
     const mode: StudyMode =
       Math.random() < 0.5 ? 'source-to-dest' : 'dest-to-source';
-    setCurrent(buildPrompt(card, mode, deck));
+    setCurrent(buildPrompt(card, mode, deck, cards));
     setRevealed(false);
   }, []);
 
@@ -107,6 +159,17 @@ export function useStudySession() {
     [activeDeck, current, db, displayLimit, drawNext]
   );
 
+  const answerChoice = useCallback(
+    async (option: string) => {
+      if (!current || current.format !== 'choice') return;
+      const correct =
+        option.trim().toLocaleLowerCase() ===
+        current.answer.trim().toLocaleLowerCase();
+      await grade(correct);
+    },
+    [current, grade]
+  );
+
   const progressLabel = useMemo(() => {
     if (!current) return '';
     return `${current.card.timesShown} / ${displayLimit}`;
@@ -124,6 +187,7 @@ export function useStudySession() {
     select,
     reveal,
     grade,
+    answerChoice,
     refresh,
   };
 }

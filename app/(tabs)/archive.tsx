@@ -6,15 +6,17 @@ import {
   Text,
   View,
 } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import { BrandHeader } from '@/src/components/BrandHeader';
 import { DeckSwitcher } from '@/src/components/DeckSwitcher';
 import { EmptyState } from '@/src/components/EmptyState';
+import { PressableScale } from '@/src/components/PressableScale';
 import { ScreenBackground } from '@/src/components/ScreenBackground';
 import { deckLabel } from '@/src/db/decks';
 import { useArchivedCards } from '@/src/hooks/useCards';
 import { useDecks } from '@/src/hooks/useDecks';
-import { colors, fonts, radius, spacing } from '@/src/theme';
+import { colors, fonts, motion, radius, shadows, spacing } from '@/src/theme';
 
 export default function ArchiveScreen() {
   const { decks, activeDeck, select } = useDecks();
@@ -54,8 +56,14 @@ export default function ArchiveScreen() {
           data={cards}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
-          renderItem={({ item }) => (
-            <View style={styles.row}>
+          renderItem={({ item, index }) => (
+            <Animated.View
+              entering={FadeInDown.duration(motion.normal)
+                .delay(Math.min(index, 8) * 40)
+                .springify()
+                .damping(18)}
+              style={styles.row}
+            >
               <View style={styles.main}>
                 <Text style={styles.source}>{item.sourceText}</Text>
                 <Text style={styles.destination}>{item.destinationText}</Text>
@@ -64,13 +72,13 @@ export default function ArchiveScreen() {
                   correct
                 </Text>
               </View>
-              <Pressable
+              <PressableScale
                 onPress={() => void restore(item.id)}
                 style={styles.restore}
               >
                 <Text style={styles.restoreText}>Restore</Text>
-              </Pressable>
-            </View>
+              </PressableScale>
+            </Animated.View>
           )}
         />
       )}
@@ -85,11 +93,14 @@ const styles = StyleSheet.create({
   },
   row: {
     backgroundColor: colors.paper,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     padding: spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.paperEdge,
+    ...shadows.soft,
   },
   main: {
     flex: 1,
@@ -98,10 +109,11 @@ const styles = StyleSheet.create({
   source: {
     fontFamily: fonts.display,
     fontSize: 22,
+    letterSpacing: -0.3,
     color: colors.ink,
   },
   destination: {
-    fontFamily: fonts.body,
+    fontFamily: fonts.bodyMedium,
     fontSize: 16,
     color: colors.slate,
   },
@@ -112,10 +124,12 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   restore: {
-    backgroundColor: colors.mistDeep,
-    borderRadius: radius.sm,
+    backgroundColor: colors.mistSoft,
+    borderRadius: radius.md,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.paperEdge,
   },
   restoreText: {
     fontFamily: fonts.bodySemi,

@@ -1,6 +1,8 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 
-import { colors, fonts, radius, spacing } from '@/src/theme';
+import { PressableScale } from '@/src/components/PressableScale';
+import { colors, fonts, motion, radius, shadows, spacing } from '@/src/theme';
 
 type Props = {
   visible: boolean;
@@ -12,24 +14,25 @@ export function GradeButtons({ visible, onWrong, onCorrect }: Props) {
   if (!visible) return null;
 
   return (
-    <View style={styles.row}>
-      <Pressable
+    <Animated.View
+      entering={FadeInUp.duration(motion.normal).springify().damping(16)}
+      style={styles.row}
+    >
+      <PressableScale
         onPress={onWrong}
         style={[styles.button, styles.wrong]}
-        accessibilityRole="button"
         accessibilityLabel="Mark as wrong"
       >
         <Text style={styles.label}>Wrong</Text>
-      </Pressable>
-      <Pressable
+      </PressableScale>
+      <PressableScale
         onPress={onCorrect}
         style={[styles.button, styles.correct]}
-        accessibilityRole="button"
         accessibilityLabel="Mark as correct"
       >
         <Text style={styles.label}>Correct</Text>
-      </Pressable>
-    </View>
+      </PressableScale>
+    </Animated.View>
   );
 }
 
@@ -41,9 +44,10 @@ const styles = StyleSheet.create({
   },
   button: {
     flex: 1,
-    paddingVertical: spacing.md,
+    paddingVertical: 15,
     borderRadius: radius.md,
     alignItems: 'center',
+    ...shadows.soft,
   },
   wrong: {
     backgroundColor: colors.wrong,
