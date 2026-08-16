@@ -1,7 +1,7 @@
 {
   "name": "canal-study",
   "main": "expo-router/entry",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "dependencies": {
     "@expo-google-fonts/bricolage-grotesque": "^0.4.1",
     "@expo-google-fonts/outfit": "^0.4.3",
