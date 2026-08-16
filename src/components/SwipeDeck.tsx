@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { Dimensions, StyleSheet, View } from 'react-native';
+import { Dimensions, StyleSheet } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   Extrapolation,
@@ -31,21 +31,21 @@ export function SwipeDeck({ children, enabled, onGrade }: Props) {
     onGrade(correct);
     translateX.value = 0;
     translateY.value = 0;
-    entering.value = 0;
-    entering.value = withTiming(1, { duration: 320 });
+    entering.value = 0.97;
+    entering.value = withTiming(1, { duration: 160 });
   };
 
   const pan = Gesture.Pan()
     .enabled(enabled)
     .onUpdate((event) => {
       translateX.value = event.translationX;
-      translateY.value = event.translationY * 0.12;
+      translateY.value = event.translationY * 0.1;
     })
     .onEnd((event) => {
       if (event.translationX > SWIPE_THRESHOLD) {
         translateX.value = withTiming(
           SCREEN_WIDTH * 1.25,
-          { duration: 240 },
+          { duration: 200 },
           () => {
             runOnJS(finish)(true);
           }
@@ -53,14 +53,14 @@ export function SwipeDeck({ children, enabled, onGrade }: Props) {
       } else if (event.translationX < -SWIPE_THRESHOLD) {
         translateX.value = withTiming(
           -SCREEN_WIDTH * 1.25,
-          { duration: 240 },
+          { duration: 200 },
           () => {
             runOnJS(finish)(false);
           }
         );
       } else {
-        translateX.value = withSpring(0, { damping: 16, stiffness: 180 });
-        translateY.value = withSpring(0, { damping: 16, stiffness: 180 });
+        translateX.value = withSpring(0, { damping: 18, stiffness: 220 });
+        translateY.value = withSpring(0, { damping: 18, stiffness: 220 });
       }
     });
 
@@ -68,7 +68,7 @@ export function SwipeDeck({ children, enabled, onGrade }: Props) {
     const rotate = `${interpolate(
       translateX.value,
       [-SCREEN_WIDTH, 0, SCREEN_WIDTH],
-      [-14, 0, 14],
+      [-10, 0, 10],
       Extrapolation.CLAMP
     )}deg`;
     return {
@@ -76,9 +76,9 @@ export function SwipeDeck({ children, enabled, onGrade }: Props) {
         { translateX: translateX.value },
         { translateY: translateY.value },
         { rotate },
-        { scale: 0.94 + entering.value * 0.06 },
+        { scale: entering.value },
       ],
-      opacity: 0.75 + entering.value * 0.25,
+      opacity: 0.92 + entering.value * 0.08,
     };
   });
 
@@ -127,12 +127,12 @@ const styles = StyleSheet.create({
   },
   correct: {
     backgroundColor: colors.correctSoft,
-    borderWidth: 2,
+    borderWidth: 1.5,
     borderColor: colors.correct,
   },
   wrong: {
     backgroundColor: colors.wrongSoft,
-    borderWidth: 2,
+    borderWidth: 1.5,
     borderColor: colors.wrong,
   },
 });

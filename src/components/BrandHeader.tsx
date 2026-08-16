@@ -1,38 +1,28 @@
 import { Image } from 'expo-image';
 import { StyleSheet, Text, View } from 'react-native';
-import Animated, { FadeInLeft, FadeInRight } from 'react-native-reanimated';
 
-import { colors, fonts, motion, radius, shadows, spacing } from '@/src/theme';
+import { colors, fonts, radius, spacing } from '@/src/theme';
 
 type Props = {
   subtitle?: string;
+  /** Kept for compatibility; header is always light on the teal band. */
   light?: boolean;
 };
 
-export function BrandHeader({ subtitle, light = false }: Props) {
+export function BrandHeader({ subtitle }: Props) {
   return (
     <View style={styles.row}>
-      <Animated.View
-        entering={FadeInLeft.duration(motion.lush).springify().damping(16)}
-        style={[styles.markWrap, light && styles.markWrapLight]}
-      >
+      <View style={styles.markWrap}>
         <Image
           source={require('../../assets/images/brand-mark.png')}
           style={styles.mark}
           contentFit="cover"
         />
-      </Animated.View>
-      <Animated.View
-        entering={FadeInRight.duration(motion.lush).delay(60).springify().damping(16)}
-        style={styles.textCol}
-      >
-        <Text style={[styles.brand, light && styles.light]}>Canal Study</Text>
-        {subtitle ? (
-          <Text style={[styles.subtitle, light && styles.lightMuted]}>
-            {subtitle}
-          </Text>
-        ) : null}
-      </Animated.View>
+      </View>
+      <View style={styles.textCol}>
+        <Text style={styles.brand}>CANAL STUDY</Text>
+        {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+      </View>
     </View>
   );
 }
@@ -41,41 +31,32 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.md,
-    marginBottom: spacing.lg,
+    gap: spacing.sm,
+    marginBottom: spacing.md,
   },
   markWrap: {
-    borderRadius: radius.md,
-    ...shadows.soft,
-  },
-  markWrapLight: {
+    borderRadius: radius.sm,
     borderWidth: 1,
-    borderColor: 'rgba(255,248,240,0.35)',
+    borderColor: 'rgba(255,255,255,0.28)',
+    overflow: 'hidden',
   },
   mark: {
-    width: 52,
-    height: 52,
-    borderRadius: radius.md,
+    width: 40,
+    height: 40,
   },
   textCol: {
     flex: 1,
-    gap: 3,
+    gap: 2,
   },
   brand: {
     fontFamily: fonts.displayBold,
-    fontSize: 30,
-    letterSpacing: -0.4,
-    color: colors.ink,
+    fontSize: 18,
+    letterSpacing: 1.4,
+    color: colors.white,
   },
   subtitle: {
     fontFamily: fonts.bodyMedium,
-    fontSize: 15,
-    color: colors.slate,
-  },
-  light: {
-    color: colors.paper,
-  },
-  lightMuted: {
-    color: 'rgba(255,248,240,0.82)',
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.78)',
   },
 });

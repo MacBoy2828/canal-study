@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 import { colors, motion, radius, shadows, spacing } from '@/src/theme';
@@ -19,10 +19,7 @@ export function Surface({
 }: Props) {
   return (
     <Animated.View
-      entering={FadeInDown.duration(motion.lush)
-        .delay(delay)
-        .springify()
-        .damping(18)}
+      entering={FadeInDown.duration(motion.normal).delay(delay)}
       style={[styles.surface, elevated && styles.elevated, style]}
     >
       {children}
@@ -38,6 +35,8 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     borderWidth: 1,
     borderColor: colors.paperEdge,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.rail,
     ...shadows.soft,
   },
   elevated: {

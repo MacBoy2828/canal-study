@@ -1,8 +1,8 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 
 import { PressableScale } from '@/src/components/PressableScale';
-import { colors, fonts, motion, radius, shadows, spacing } from '@/src/theme';
+import { colors, fonts, motion, radius, spacing } from '@/src/theme';
 
 type Props = {
   visible: boolean;
@@ -15,7 +15,7 @@ export function GradeButtons({ visible, onWrong, onCorrect }: Props) {
 
   return (
     <Animated.View
-      entering={FadeInUp.duration(motion.normal).springify().damping(16)}
+      entering={FadeInUp.duration(motion.snappy)}
       style={styles.row}
     >
       <PressableScale
@@ -39,15 +39,13 @@ export function GradeButtons({ visible, onWrong, onCorrect }: Props) {
 const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
-    gap: spacing.md,
-    marginTop: spacing.lg,
+    gap: spacing.sm,
   },
   button: {
     flex: 1,
-    paddingVertical: 15,
+    paddingVertical: 14,
     borderRadius: radius.md,
     alignItems: 'center',
-    ...shadows.soft,
   },
   wrong: {
     backgroundColor: colors.wrong,
@@ -57,7 +55,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontFamily: fonts.bodySemi,
-    fontSize: 17,
+    fontSize: 16,
     color: colors.white,
   },
 });

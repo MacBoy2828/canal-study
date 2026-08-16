@@ -14,7 +14,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#A8C0D4",
+        "backgroundColor": "#1F6F82",
         "foregroundImage": "./assets/images/brand-mark.png"
       },
       "package": "com.canalstudy.app",

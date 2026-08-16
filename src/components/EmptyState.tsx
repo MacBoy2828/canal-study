@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { StyleSheet, Text, View } from 'react-native';
-import Animated, { FadeIn, FadeInUp, ZoomIn } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 
 import { colors, fonts, motion, radius, shadows, spacing } from '@/src/theme';
 
@@ -14,19 +14,19 @@ export function EmptyState({ image, title, message }: Props) {
   return (
     <View style={styles.wrap}>
       <Animated.View
-        entering={ZoomIn.duration(motion.lush).springify().damping(14)}
+        entering={FadeIn.duration(motion.normal)}
         style={styles.imageWrap}
       >
         <Image source={image} style={styles.image} contentFit="cover" />
       </Animated.View>
       <Animated.Text
-        entering={FadeInUp.delay(80).duration(motion.normal)}
+        entering={FadeInUp.delay(40).duration(motion.normal)}
         style={styles.title}
       >
         {title}
       </Animated.Text>
       <Animated.Text
-        entering={FadeIn.delay(140).duration(motion.normal)}
+        entering={FadeIn.delay(80).duration(motion.normal)}
         style={styles.message}
       >
         {message}
@@ -44,25 +44,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
   },
   imageWrap: {
-    ...shadows.lift,
+    ...shadows.soft,
     borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.paperEdge,
+    overflow: 'hidden',
   },
   image: {
-    width: 220,
-    height: 220,
-    borderRadius: radius.lg,
+    width: 200,
+    height: 200,
   },
   title: {
     fontFamily: fonts.displayBold,
-    fontSize: 30,
-    letterSpacing: -0.4,
+    fontSize: 26,
+    letterSpacing: -0.3,
     color: colors.ink,
     textAlign: 'center',
   },
   message: {
     fontFamily: fonts.body,
-    fontSize: 17,
-    lineHeight: 24,
+    fontSize: 16,
+    lineHeight: 23,
     color: colors.slate,
     textAlign: 'center',
     maxWidth: 320,

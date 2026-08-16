@@ -1,7 +1,7 @@
 export const fonts = {
-  display: 'Fraunces_600SemiBold',
-  displayBold: 'Fraunces_700Bold',
-  body: 'SourceSans3_400Regular',
-  bodyMedium: 'SourceSans3_500Medium',
-  bodySemi: 'SourceSans3_600SemiBold',
+  display: 'Syne_600SemiBold',
+  displayBold: 'Syne_700Bold',
+  body: 'DMSans_400Regular',
+  bodyMedium: 'DMSans_500Medium',
+  bodySemi: 'DMSans_600SemiBold',
 } as const;

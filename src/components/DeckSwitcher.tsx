@@ -1,9 +1,9 @@
-import { ScrollView, StyleSheet, Text } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { PressableScale } from '@/src/components/PressableScale';
 import { deckLabel } from '@/src/db/decks';
 import type { Deck } from '@/src/db/types';
-import { colors, fonts, radius, shadows, spacing } from '@/src/theme';
+import { colors, fonts, spacing } from '@/src/theme';
 
 type Props = {
   decks: Deck[];
@@ -16,85 +16,74 @@ export function DeckSwitcher({
   decks,
   activeDeckId,
   onSelect,
-  light = false,
 }: Props) {
   if (decks.length === 0) return null;
 
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.row}
-      style={styles.scroll}
-    >
-      {decks.map((deck) => {
-        const active = deck.id === activeDeckId;
-        return (
-          <PressableScale
-            key={deck.id}
-            onPress={() => onSelect(deck.id)}
-            style={[
-              styles.chip,
-              light && styles.chipLight,
-              active && (light ? styles.chipActiveLight : styles.chipActive),
-            ]}
-            accessibilityLabel={`Select ${deckLabel(deck)}`}
-          >
-            <Text
-              style={[
-                styles.chipText,
-                light && styles.chipTextLight,
-                active && styles.chipTextActive,
-              ]}
+    <View style={styles.wrap}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.row}
+        style={styles.scroll}
+      >
+        {decks.map((deck) => {
+          const active = deck.id === activeDeckId;
+          return (
+            <PressableScale
+              key={deck.id}
+              onPress={() => onSelect(deck.id)}
+              style={styles.item}
+              accessibilityLabel={`Select ${deckLabel(deck)}`}
             >
-              {deckLabel(deck)}
-            </Text>
-          </PressableScale>
-        );
-      })}
-    </ScrollView>
+              <Text style={[styles.label, active && styles.labelActive]}>
+                {deckLabel(deck)}
+              </Text>
+              <View style={[styles.underline, active && styles.underlineActive]} />
+            </PressableScale>
+          );
+        })}
+      </ScrollView>
+      <View style={styles.rule} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: {
+  wrap: {
     marginBottom: spacing.md,
+  },
+  scroll: {
     flexGrow: 0,
   },
   row: {
-    gap: spacing.sm,
+    gap: spacing.lg,
     paddingRight: spacing.md,
   },
-  chip: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: 10,
-    borderRadius: radius.md,
-    backgroundColor: colors.glass,
-    borderWidth: 1,
-    borderColor: colors.paperEdge,
-    ...shadows.soft,
+  item: {
+    paddingBottom: spacing.sm,
   },
-  chipLight: {
-    backgroundColor: colors.glassDark,
-    borderColor: 'rgba(255,248,240,0.28)',
-  },
-  chipActive: {
-    backgroundColor: colors.orange,
-    borderColor: colors.orangeDeep,
-  },
-  chipActiveLight: {
-    backgroundColor: colors.orange,
-    borderColor: colors.orangeSoft,
-  },
-  chipText: {
-    fontFamily: fonts.bodySemi,
+  label: {
+    fontFamily: fonts.bodyMedium,
     fontSize: 14,
-    color: colors.ink,
+    letterSpacing: 0.2,
+    color: 'rgba(255,255,255,0.62)',
   },
-  chipTextLight: {
-    color: colors.paper,
-  },
-  chipTextActive: {
+  labelActive: {
+    fontFamily: fonts.bodySemi,
     color: colors.white,
+  },
+  underline: {
+    marginTop: 8,
+    height: 2,
+    backgroundColor: 'transparent',
+  },
+  underlineActive: {
+    backgroundColor: colors.orange,
+  },
+  rule: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: 'rgba(255,255,255,0.22)',
+    marginTop: -StyleSheet.hairlineWidth,
   },
 });

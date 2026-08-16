@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
   text: {
     fontFamily: fonts.bodySemi,
     fontSize: 15,
-    color: colors.paper,
+    color: colors.white,
     textAlign: 'center',
   },
 });

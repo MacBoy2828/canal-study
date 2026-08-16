@@ -1,5 +1,5 @@
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import Animated, { FadeIn } from 'react-native-reanimated';
 
 import { BrandHeader } from '@/src/components/BrandHeader';
 import { DeckSwitcher } from '@/src/components/DeckSwitcher';
@@ -10,7 +10,7 @@ import { ScreenBackground } from '@/src/components/ScreenBackground';
 import { SwipeDeck } from '@/src/components/SwipeDeck';
 import { deckLabel } from '@/src/db/decks';
 import { useStudySession } from '@/src/hooks/useStudySession';
-import { colors, fonts, radius, spacing } from '@/src/theme';
+import { colors, fonts, motion, radius, spacing } from '@/src/theme';
 
 export default function StudyScreen() {
   const {
@@ -29,10 +29,10 @@ export default function StudyScreen() {
 
   if (loading) {
     return (
-      <ScreenBackground heroImage={require('../../assets/images/hero-study.png')}>
-        <BrandHeader subtitle="Flashcards" light />
+      <ScreenBackground>
+        <BrandHeader subtitle="Flashcards" />
         <View style={styles.center}>
-          <ActivityIndicator color={colors.paper} size="large" />
+          <ActivityIndicator color={colors.white} size="large" />
         </View>
       </ScreenBackground>
     );
@@ -72,38 +72,40 @@ export default function StudyScreen() {
   const isChoice = current.format === 'choice';
 
   return (
-    <ScreenBackground heroImage={require('../../assets/images/hero-study.png')}>
+    <ScreenBackground>
       <BrandHeader
         subtitle={
           isChoice
             ? 'Choose the matching word'
             : 'Tap to reveal · swipe to grade'
         }
-        light
       />
       <DeckSwitcher
         decks={decks}
         activeDeckId={activeDeck.id}
         onSelect={(id) => void select(id)}
-        light
       />
-      <Animated.View
-        key={current.card.id + current.mode + current.format + activeDeck.id}
-        entering={FadeInDown.duration(320)}
-        style={styles.stage}
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.stage}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
-        <SwipeDeck
-          enabled={!isChoice && revealed}
-          onGrade={grade}
+        <Animated.View
+          key={current.card.id + current.mode + current.format + activeDeck.id}
+          entering={FadeIn.duration(motion.snappy)}
+          style={styles.deckBlock}
         >
-          <FlashCardFace
-            prompt={current}
-            revealed={revealed}
-            progressLabel={progressLabel}
-            onReveal={reveal}
-            onChoose={(option) => void answerChoice(option)}
-          />
-        </SwipeDeck>
+          <SwipeDeck enabled={!isChoice && revealed} onGrade={grade}>
+            <FlashCardFace
+              prompt={current}
+              revealed={revealed}
+              progressLabel={progressLabel}
+              onReveal={reveal}
+              onChoose={(option) => void answerChoice(option)}
+            />
+          </SwipeDeck>
+        </Animated.View>
         {!isChoice ? (
           <GradeButtons
             visible={revealed}
@@ -115,7 +117,7 @@ export default function StudyScreen() {
           {deckLabel(activeDeck)} · {poolSize} card
           {poolSize === 1 ? '' : 's'}
         </Text>
-      </Animated.View>
+      </ScrollView>
     </ScreenBackground>
   );
 }
@@ -126,22 +128,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  stage: {
+  scroll: {
     flex: 1,
+  },
+  stage: {
+    flexGrow: 1,
     justifyContent: 'center',
+    paddingBottom: spacing.lg,
+    gap: spacing.md,
+  },
+  deckBlock: {
+    width: '100%',
   },
   poolHint: {
-    marginTop: spacing.md,
     alignSelf: 'center',
     textAlign: 'center',
     fontFamily: fonts.bodySemi,
-    fontSize: 13,
-    letterSpacing: 0.3,
-    color: colors.paper,
-    backgroundColor: colors.glassDark,
+    fontSize: 12,
+    letterSpacing: 0.4,
+    color: colors.inkSoft,
+    backgroundColor: colors.glass,
     overflow: 'hidden',
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    borderRadius: radius.md,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: colors.paperEdge,
   },
 });

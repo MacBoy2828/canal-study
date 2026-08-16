@@ -20,7 +20,7 @@ import { Toast } from '@/src/components/Toast';
 import { deckLabel } from '@/src/db/decks';
 import { useActiveCards } from '@/src/hooks/useCards';
 import { useDecks } from '@/src/hooks/useDecks';
-import { colors, fonts, radius, shadows, spacing } from '@/src/theme';
+import { colors, fonts, radius, spacing } from '@/src/theme';
 
 export default function AddScreen() {
   const { decks, activeDeck, select } = useDecks();
@@ -180,16 +180,17 @@ const styles = StyleSheet.create({
     height: 168,
     borderRadius: radius.lg,
     marginBottom: spacing.md,
-    ...shadows.lift,
+    borderWidth: 1,
+    borderColor: colors.paperEdge,
   },
   label: {
     fontFamily: fonts.bodySemi,
     fontSize: 14,
-    color: colors.slate,
+    color: colors.inkSoft,
     marginTop: spacing.sm,
   },
   input: {
-    backgroundColor: colors.paper,
+    backgroundColor: colors.white,
     borderRadius: radius.md,
     borderWidth: 1,
     borderColor: colors.paperEdge,
@@ -198,7 +199,6 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: 18,
     color: colors.ink,
-    ...shadows.soft,
   },
   button: {
     marginTop: spacing.lg,
@@ -206,7 +206,6 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     paddingVertical: 15,
     alignItems: 'center',
-    ...shadows.soft,
   },
   buttonDisabled: {
     opacity: 0.6,

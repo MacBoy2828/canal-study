@@ -1,9 +1,9 @@
-import { Fraunces_600SemiBold, Fraunces_700Bold } from '@expo-google-fonts/fraunces';
 import {
-  SourceSans3_400Regular,
-  SourceSans3_500Medium,
-  SourceSans3_600SemiBold,
-} from '@expo-google-fonts/source-sans-3';
+  DMSans_400Regular,
+  DMSans_500Medium,
+  DMSans_600SemiBold,
+} from '@expo-google-fonts/dm-sans';
+import { Syne_600SemiBold, Syne_700Bold } from '@expo-google-fonts/syne';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -29,11 +29,11 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
-    Fraunces_600SemiBold,
-    Fraunces_700Bold,
-    SourceSans3_400Regular,
-    SourceSans3_500Medium,
-    SourceSans3_600SemiBold,
+    Syne_600SemiBold,
+    Syne_700Bold,
+    DMSans_400Regular,
+    DMSans_500Medium,
+    DMSans_600SemiBold,
   });
 
   useEffect(() => {
@@ -56,8 +56,13 @@ export default function RootLayout() {
         <DecksProvider>
           <ReminderBootstrap />
           <UpdateProvider>
-            <StatusBar style="dark" />
-            <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.mist } }}>
+            <StatusBar style="light" />
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                contentStyle: { backgroundColor: colors.mist },
+              }}
+            >
               <Stack.Screen name="(tabs)" />
             </Stack>
           </UpdateProvider>
