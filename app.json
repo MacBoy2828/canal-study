@@ -2,7 +2,7 @@
   "expo": {
     "name": "Canal Study",
     "slug": "canal-study",
-    "version": "2.0.2",
+    "version": "2.0.3",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "canalstudy",
@@ -10,7 +10,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.canalstudy.app",
-      "buildNumber": "4"
+      "buildNumber": "5"
     },
     "android": {
       "adaptiveIcon": {
@@ -18,7 +18,7 @@
         "foregroundImage": "./assets/images/brand-mark.png"
       },
       "package": "com.canalstudy.app",
-      "versionCode": 4,
+      "versionCode": 5,
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "android.permission.INTERNET",
