@@ -1,35 +1,57 @@
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
-import { ReactNode } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { ReactNode, useEffect } from 'react';
+import { ImageSourcePropType, StyleSheet, View } from 'react-native';
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { colors, spacing } from '@/src/theme';
 
 type Props = {
   children: ReactNode;
-  /** Kept for call-site compatibility; hero photos are no longer used. */
-  heroImage?: unknown;
+  heroImage?: ImageSourcePropType;
   dim?: number;
 };
 
-export function ScreenBackground({ children }: Props) {
+export function ScreenBackground({
+  children,
+  heroImage = require('../../assets/images/hero-study.png'),
+}: Props) {
   const insets = useSafeAreaInsets();
+  const drift = useSharedValue(0);
+
+  useEffect(() => {
+    drift.value = withRepeat(
+      withTiming(1, { duration: 18000, easing: Easing.inOut(Easing.sin) }),
+      -1,
+      true
+    );
+  }, [drift]);
+
+  const washStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: 1.08 }, { translateY: drift.value * 10 }],
+  }));
 
   return (
     <View style={styles.root}>
+      <Animated.View style={[styles.wash, washStyle]}>
+        <Image source={heroImage} style={StyleSheet.absoluteFill} contentFit="cover" />
+      </Animated.View>
       <LinearGradient
-        colors={[colors.band, colors.mistDeep, colors.mist]}
-        locations={[0, 0.22, 0.46]}
-        style={styles.band}
+        colors={[
+          'rgba(244,239,232,0.28)',
+          'rgba(244,239,232,0.72)',
+          colors.mist,
+        ]}
+        locations={[0, 0.38, 0.72]}
+        style={StyleSheet.absoluteFill}
       />
-      <View style={styles.grid} pointerEvents="none">
-        {[1, 2, 3, 4, 5, 6].map((i) => (
-          <View
-            key={i}
-            style={[styles.gridLine, { left: `${i * 14}%` as `${number}%` }]}
-          />
-        ))}
-      </View>
       <View
         style={[
           styles.content,
@@ -51,23 +73,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.mist,
     overflow: 'hidden',
   },
-  band: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '42%',
-  },
-  grid: {
+  wash: {
     ...StyleSheet.absoluteFill,
-    opacity: 0.08,
-  },
-  gridLine: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    width: StyleSheet.hairlineWidth,
-    backgroundColor: colors.ink,
   },
   content: {
     flex: 1,

@@ -16,6 +16,7 @@ export type StudyPrompt = {
   answer: string;
   promptLabel: string;
   answerLabel: string;
+  example: string;
   /** Shuffled options for multiple-choice prompts. */
   options?: string[];
 };
@@ -68,6 +69,7 @@ function buildPrompt(
           promptLabel: deck.destinationLanguage,
           answerLabel: deck.sourceLanguage,
         };
+  const example = card.exampleText;
 
   const wantChoice = Math.random() < 0.25;
   const distractorPool = uniqueAnswers(
@@ -84,6 +86,7 @@ function buildPrompt(
       mode,
       format: 'choice',
       ...base,
+      example,
       options: shuffle([base.answer, ...distractors]),
     };
   }
@@ -93,6 +96,7 @@ function buildPrompt(
     mode,
     format: 'flashcard',
     ...base,
+    example,
   };
 }
 
@@ -102,12 +106,14 @@ export function useStudySession() {
   const [pool, setPool] = useState<Flashcard[]>([]);
   const [current, setCurrent] = useState<StudyPrompt | null>(null);
   const [revealed, setRevealed] = useState(false);
+  const [pickedOption, setPickedOption] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const drawNext = useCallback((cards: Flashcard[], deck: Deck | null) => {
     if (!deck || cards.length === 0) {
       setCurrent(null);
       setRevealed(false);
+      setPickedOption(null);
       return;
     }
     const card = pickRandom(cards);
@@ -115,6 +121,7 @@ export function useStudySession() {
       Math.random() < 0.5 ? 'source-to-dest' : 'dest-to-source';
     setCurrent(buildPrompt(card, mode, deck, cards));
     setRevealed(false);
+    setPickedOption(null);
   }, []);
 
   const refresh = useCallback(async () => {
@@ -159,16 +166,19 @@ export function useStudySession() {
     [activeDeck, current, db, displayLimit, drawNext]
   );
 
-  const answerChoice = useCallback(
-    async (option: string) => {
-      if (!current || current.format !== 'choice') return;
-      const correct =
-        option.trim().toLocaleLowerCase() ===
-        current.answer.trim().toLocaleLowerCase();
-      await grade(correct);
-    },
-    [current, grade]
-  );
+  const answerChoice = useCallback((option: string) => {
+    if (!current || current.format !== 'choice' || revealed) return;
+    setPickedOption(option);
+    setRevealed(true);
+  }, [current, revealed]);
+
+  const confirmChoice = useCallback(async () => {
+    if (!current || current.format !== 'choice' || !pickedOption) return;
+    const correct =
+      pickedOption.trim().toLocaleLowerCase() ===
+      current.answer.trim().toLocaleLowerCase();
+    await grade(correct);
+  }, [current, grade, pickedOption]);
 
   const progressLabel = useMemo(() => {
     if (!current) return '';
@@ -188,6 +198,8 @@ export function useStudySession() {
     reveal,
     grade,
     answerChoice,
+    confirmChoice,
+    pickedOption,
     refresh,
   };
 }

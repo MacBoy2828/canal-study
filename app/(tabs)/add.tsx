@@ -27,11 +27,13 @@ export default function AddScreen() {
   const { create } = useActiveCards();
   const [sourceText, setSourceText] = useState('');
   const [destinationText, setDestinationText] = useState('');
+  const [exampleText, setExampleText] = useState('');
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
   const sourceRef = useRef<TextInputType>(null);
   const destinationRef = useRef<TextInputType>(null);
+  const exampleRef = useRef<TextInputType>(null);
   const scrollRef = useRef<ScrollView>(null);
 
   const hideToast = useCallback(() => setToast(null), []);
@@ -63,9 +65,10 @@ export default function AddScreen() {
     setSaving(true);
     try {
       const word = sourceText.trim();
-      await create({ sourceText, destinationText });
+      await create({ sourceText, destinationText, exampleText });
       setSourceText('');
       setDestinationText('');
+      setExampleText('');
       setToast(`Added “${word}”`);
       // Keep the keyboard up for rapid entry of the next card.
       requestAnimationFrame(() => {
@@ -141,14 +144,31 @@ export default function AddScreen() {
             placeholderTextColor={colors.tabInactive}
             style={styles.input}
             autoCapitalize="none"
-            returnKeyType="done"
+            returnKeyType="next"
+            blurOnSubmit={false}
+            onSubmitEditing={() => exampleRef.current?.focus()}
+            onFocus={() => {
+              requestAnimationFrame(() => {
+                scrollRef.current?.scrollToEnd({ animated: true });
+              });
+            }}
+          />
+          <Text style={styles.label}>Example (optional)</Text>
+          <TextInput
+            ref={exampleRef}
+            value={exampleText}
+            onChangeText={setExampleText}
+            placeholder="A sentence using the word"
+            placeholderTextColor={colors.tabInactive}
+            style={[styles.input, styles.exampleInput]}
+            autoCapitalize="sentences"
+            multiline
             blurOnSubmit={false}
             onFocus={() => {
               requestAnimationFrame(() => {
                 scrollRef.current?.scrollToEnd({ animated: true });
               });
             }}
-            onSubmitEditing={() => void onSave()}
           />
           <PressableScale
             onPress={() => void onSave()}
@@ -177,11 +197,9 @@ const styles = StyleSheet.create({
   },
   illustration: {
     width: '100%',
-    height: 168,
+    height: 180,
     borderRadius: radius.lg,
     marginBottom: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.paperEdge,
   },
   label: {
     fontFamily: fonts.bodySemi,
@@ -199,6 +217,11 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: 18,
     color: colors.ink,
+  },
+  exampleInput: {
+    minHeight: 88,
+    textAlignVertical: 'top',
+    fontSize: 16,
   },
   button: {
     marginTop: spacing.lg,

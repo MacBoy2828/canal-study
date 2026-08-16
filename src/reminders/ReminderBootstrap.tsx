@@ -2,13 +2,17 @@ import { useEffect } from 'react';
 import { useSQLiteContext } from 'expo-sqlite';
 
 import { getSettings } from '@/src/db/settings';
-import { syncStudyReminder } from '@/src/reminders/studyReminder';
+import {
+  areStudyRemindersAvailable,
+  syncStudyReminder,
+} from '@/src/reminders/studyReminder';
 
 /** Re-fills the rolling reminder schedule whenever the app starts. */
 export function ReminderBootstrap() {
   const db = useSQLiteContext();
 
   useEffect(() => {
+    if (!areStudyRemindersAvailable()) return;
     let cancelled = false;
     void (async () => {
       try {

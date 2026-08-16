@@ -67,6 +67,11 @@ export default function ArchiveScreen() {
               <View style={styles.main}>
                 <Text style={styles.source}>{item.sourceText}</Text>
                 <Text style={styles.destination}>{item.destinationText}</Text>
+                {item.exampleText ? (
+                  <Text style={styles.example} numberOfLines={2}>
+                    {item.exampleText}
+                  </Text>
+                ) : null}
                 <Text style={styles.meta}>
                   Finished at {item.timesShown} shows · {item.timesCorrect}{' '}
                   correct
@@ -116,6 +121,13 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyMedium,
     fontSize: 16,
     color: colors.slate,
+  },
+  example: {
+    fontFamily: fonts.body,
+    fontSize: 14,
+    fontStyle: 'italic',
+    color: colors.slate,
+    marginTop: 2,
   },
   meta: {
     fontFamily: fonts.body,

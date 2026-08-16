@@ -1,9 +1,12 @@
 import {
-  DMSans_400Regular,
-  DMSans_500Medium,
-  DMSans_600SemiBold,
-} from '@expo-google-fonts/dm-sans';
-import { Syne_600SemiBold, Syne_700Bold } from '@expo-google-fonts/syne';
+  BricolageGrotesque_600SemiBold,
+  BricolageGrotesque_700Bold,
+} from '@expo-google-fonts/bricolage-grotesque';
+import {
+  Outfit_400Regular,
+  Outfit_500Medium,
+  Outfit_600SemiBold,
+} from '@expo-google-fonts/outfit';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -29,11 +32,11 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
-    Syne_600SemiBold,
-    Syne_700Bold,
-    DMSans_400Regular,
-    DMSans_500Medium,
-    DMSans_600SemiBold,
+    BricolageGrotesque_600SemiBold,
+    BricolageGrotesque_700Bold,
+    Outfit_400Regular,
+    Outfit_500Medium,
+    Outfit_600SemiBold,
   });
 
   useEffect(() => {
@@ -56,7 +59,7 @@ export default function RootLayout() {
         <DecksProvider>
           <ReminderBootstrap />
           <UpdateProvider>
-            <StatusBar style="light" />
+            <StatusBar style="dark" />
             <Stack
               screenOptions={{
                 headerShown: false,

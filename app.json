@@ -14,8 +14,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#1F6F82",
-        "foregroundImage": "./assets/images/brand-mark.png"
+        "backgroundColor": "#241E1A",
+        "foregroundImage": "./assets/images/icon.png"
       },
       "package": "com.canalstudy.app",
       "versionCode": 6,
@@ -37,13 +37,21 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router",
+      [
+        "expo-router",
+        {
+          "headers": {
+            "Cross-Origin-Embedder-Policy": "credentialless",
+            "Cross-Origin-Opener-Policy": "same-origin"
+          }
+        }
+      ],
       [
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",
           "resizeMode": "contain",
-          "backgroundColor": "#D7E4EE"
+          "backgroundColor": "#F4EFE8"
         }
       ],
       "expo-sqlite",
@@ -53,7 +61,7 @@
       [
         "expo-notifications",
         {
-          "color": "#E36A2A",
+          "color": "#E85A3A",
           "defaultChannel": "study-reminders"
         }
       ]

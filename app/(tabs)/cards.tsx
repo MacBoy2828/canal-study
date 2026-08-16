@@ -33,11 +33,13 @@ export default function CardsScreen() {
   const [editing, setEditing] = useState<Flashcard | null>(null);
   const [sourceText, setSourceText] = useState('');
   const [destinationText, setDestinationText] = useState('');
+  const [exampleText, setExampleText] = useState('');
 
   const openEdit = (card: Flashcard) => {
     setEditing(card);
     setSourceText(card.sourceText);
     setDestinationText(card.destinationText);
+    setExampleText(card.exampleText);
   };
 
   const saveEdit = async () => {
@@ -46,7 +48,7 @@ export default function CardsScreen() {
       Alert.alert('Missing fields', 'Both sides of the card are required.');
       return;
     }
-    await update(editing.id, { sourceText, destinationText });
+    await update(editing.id, { sourceText, destinationText, exampleText });
     setEditing(null);
   };
 
@@ -106,6 +108,11 @@ export default function CardsScreen() {
               <Pressable style={styles.main} onPress={() => openEdit(item)}>
                 <Text style={styles.source}>{item.sourceText}</Text>
                 <Text style={styles.destination}>{item.destinationText}</Text>
+                {item.exampleText ? (
+                  <Text style={styles.example} numberOfLines={2}>
+                    {item.exampleText}
+                  </Text>
+                ) : null}
                 <Text style={styles.meta}>
                   Shown {item.timesShown} / {displayLimit} · Correct{' '}
                   {item.timesCorrect}
@@ -165,6 +172,15 @@ export default function CardsScreen() {
                 placeholder={activeDeck.destinationLanguage}
                 placeholderTextColor={colors.tabInactive}
               />
+              <Text style={styles.modalLabel}>Example (optional)</Text>
+              <TextInput
+                value={exampleText}
+                onChangeText={setExampleText}
+                style={[styles.input, styles.exampleInput]}
+                placeholder="A sentence using the word"
+                placeholderTextColor={colors.tabInactive}
+                multiline
+              />
               <View style={styles.modalActions}>
                 <Pressable
                   onPress={() => setEditing(null)}
@@ -217,6 +233,13 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyMedium,
     fontSize: 16,
     color: colors.slate,
+  },
+  example: {
+    fontFamily: fonts.body,
+    fontSize: 14,
+    fontStyle: 'italic',
+    color: colors.slate,
+    marginTop: 2,
   },
   meta: {
     fontFamily: fonts.body,
@@ -279,6 +302,10 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: 17,
     color: colors.ink,
+  },
+  exampleInput: {
+    minHeight: 88,
+    textAlignVertical: 'top',
   },
   modalActions: {
     flexDirection: 'row',

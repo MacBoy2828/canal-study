@@ -35,8 +35,6 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     borderWidth: 1,
     borderColor: colors.paperEdge,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.rail,
     ...shadows.soft,
   },
   elevated: {

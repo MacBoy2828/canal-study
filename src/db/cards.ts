@@ -7,6 +7,7 @@ type CardRow = {
   deck_id: string;
   source_text: string;
   destination_text: string;
+  example_text?: string | null;
   times_shown: number;
   times_correct: number;
   status: 'active' | 'archived';
@@ -14,12 +15,17 @@ type CardRow = {
   updated_at: number;
 };
 
+function normalizeExample(value?: string | null): string {
+  return value?.trim() ?? '';
+}
+
 function mapRow(row: CardRow): Flashcard {
   return {
     id: row.id,
     deckId: row.deck_id,
     sourceText: row.source_text,
     destinationText: row.destination_text,
+    exampleText: normalizeExample(row.example_text),
     timesShown: row.times_shown,
     timesCorrect: row.times_correct,
     status: row.status,
@@ -67,6 +73,7 @@ export async function createCard(
     deckId,
     sourceText: input.sourceText.trim(),
     destinationText: input.destinationText.trim(),
+    exampleText: normalizeExample(input.exampleText),
     timesShown: 0,
     timesCorrect: 0,
     status: 'active',
@@ -76,13 +83,14 @@ export async function createCard(
 
   await db.runAsync(
     `INSERT INTO cards (
-      id, deck_id, source_text, destination_text,
+      id, deck_id, source_text, destination_text, example_text,
       times_shown, times_correct, status, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     card.id,
     card.deckId,
     card.sourceText,
     card.destinationText,
+    card.exampleText,
     card.timesShown,
     card.timesCorrect,
     card.status,
@@ -106,10 +114,11 @@ export async function updateCard(
 ): Promise<void> {
   await db.runAsync(
     `UPDATE cards
-     SET source_text = ?, destination_text = ?, updated_at = ?
+     SET source_text = ?, destination_text = ?, example_text = ?, updated_at = ?
      WHERE id = ?`,
     input.sourceText.trim(),
     input.destinationText.trim(),
+    normalizeExample(input.exampleText),
     Date.now(),
     id
   );

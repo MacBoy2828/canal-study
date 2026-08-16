@@ -1,12 +1,10 @@
 import { ReactNode } from 'react';
-import { Pressable, type StyleProp, type ViewStyle } from 'react-native';
+import { Pressable, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
 } from 'react-native-reanimated';
-
-const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 type Props = {
   children: ReactNode;
@@ -32,7 +30,7 @@ export function PressableScale({
   }));
 
   return (
-    <AnimatedPressable
+    <Pressable
       accessibilityRole={accessibilityRole}
       accessibilityLabel={accessibilityLabel}
       disabled={disabled}
@@ -43,9 +41,15 @@ export function PressableScale({
       onPressOut={() => {
         scale.value = withSpring(1, { damping: 14, stiffness: 220 });
       }}
-      style={[style, animatedStyle]}
+      style={style}
     >
-      {children}
-    </AnimatedPressable>
+      <Animated.View style={[styles.fill, animatedStyle]}>{children}</Animated.View>
+    </Pressable>
   );
 }
+
+const styles = StyleSheet.create({
+  fill: {
+    width: '100%',
+  },
+});

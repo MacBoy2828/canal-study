@@ -3,12 +3,12 @@ import { Tabs } from 'expo-router';
 import { StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { colors, fonts } from '@/src/theme';
+import { colors, fonts, shadows } from '@/src/theme';
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
   const bottomPad = Math.max(insets.bottom, 10);
-  const tabBarHeight = 56 + bottomPad;
+  const tabBarHeight = 58 + bottomPad;
 
   return (
     <Tabs
@@ -21,14 +21,13 @@ export default function TabLayout() {
           borderTopColor: colors.paperEdge,
           borderTopWidth: StyleSheet.hairlineWidth,
           height: tabBarHeight,
-          paddingTop: 6,
+          paddingTop: 8,
           paddingBottom: bottomPad,
+          ...shadows.soft,
         },
         tabBarLabelStyle: {
-          fontFamily: fonts.bodySemi,
-          fontSize: 10,
-          letterSpacing: 0.4,
-          textTransform: 'uppercase',
+          fontFamily: fonts.bodyMedium,
+          fontSize: 11,
         },
       }}
     >

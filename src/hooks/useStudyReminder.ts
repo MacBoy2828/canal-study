@@ -3,12 +3,14 @@ import { useSQLiteContext } from 'expo-sqlite';
 
 import * as settingsDb from '@/src/db/settings';
 import {
+  areStudyRemindersAvailable,
   formatReminderTime,
   syncStudyReminder,
 } from '@/src/reminders/studyReminder';
 
 export function useStudyReminder() {
   const db = useSQLiteContext();
+  const available = areStudyRemindersAvailable();
   const [enabled, setEnabledState] = useState(false);
   const [hour, setHour] = useState(settingsDb.DEFAULT_REMINDER_HOUR);
   const [minute, setMinute] = useState(settingsDb.DEFAULT_REMINDER_MINUTE);
@@ -20,13 +22,15 @@ export function useStudyReminder() {
     setEnabledState(settings.reminderEnabled);
     setHour(settings.reminderHour);
     setMinute(settings.reminderMinute);
-    await syncStudyReminder({
-      enabled: settings.reminderEnabled,
-      hour: settings.reminderHour,
-      minute: settings.reminderMinute,
-    });
+    if (available) {
+      await syncStudyReminder({
+        enabled: settings.reminderEnabled,
+        hour: settings.reminderHour,
+        minute: settings.reminderMinute,
+      });
+    }
     setLoading(false);
-  }, [db]);
+  }, [available, db]);
 
   useEffect(() => {
     void refresh();
@@ -34,6 +38,9 @@ export function useStudyReminder() {
 
   const setEnabled = useCallback(
     async (nextEnabled: boolean) => {
+      if (!available) {
+        return { ok: false as const, reason: 'unavailable' as const };
+      }
       setBusy(true);
       try {
         if (nextEnabled) {
@@ -62,11 +69,14 @@ export function useStudyReminder() {
         setBusy(false);
       }
     },
-    [db, hour, minute]
+    [available, db, hour, minute]
   );
 
   const setTime = useCallback(
     async (nextHour: number, nextMinute: number) => {
+      if (!available) {
+        return { ok: false as const, reason: 'unavailable' as const };
+      }
       setBusy(true);
       try {
         if (enabled) {
@@ -94,10 +104,11 @@ export function useStudyReminder() {
         setBusy(false);
       }
     },
-    [db, enabled]
+    [available, db, enabled]
   );
 
   return {
+    available,
     enabled,
     hour,
     minute,

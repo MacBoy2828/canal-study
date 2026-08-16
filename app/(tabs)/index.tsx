@@ -25,6 +25,8 @@ export default function StudyScreen() {
     reveal,
     grade,
     answerChoice,
+    confirmChoice,
+    pickedOption,
   } = useStudySession();
 
   if (loading) {
@@ -32,7 +34,7 @@ export default function StudyScreen() {
       <ScreenBackground>
         <BrandHeader subtitle="Flashcards" />
         <View style={styles.center}>
-          <ActivityIndicator color={colors.white} size="large" />
+          <ActivityIndicator color={colors.orange} size="large" />
         </View>
       </ScreenBackground>
     );
@@ -76,7 +78,9 @@ export default function StudyScreen() {
       <BrandHeader
         subtitle={
           isChoice
-            ? 'Choose the matching word'
+            ? revealed
+              ? 'Tap Continue for the next card'
+              : 'Choose the matching word'
             : 'Tap to reveal · swipe to grade'
         }
       />
@@ -101,12 +105,18 @@ export default function StudyScreen() {
               prompt={current}
               revealed={revealed}
               progressLabel={progressLabel}
+              pickedOption={pickedOption}
               onReveal={reveal}
-              onChoose={(option) => void answerChoice(option)}
+              onChoose={answerChoice}
             />
           </SwipeDeck>
         </Animated.View>
-        {!isChoice ? (
+        {isChoice && revealed ? (
+          <GradeButtons
+            visible
+            onContinue={() => void confirmChoice()}
+          />
+        ) : !isChoice ? (
           <GradeButtons
             visible={revealed}
             onWrong={() => void grade(false)}
@@ -143,15 +153,14 @@ const styles = StyleSheet.create({
   poolHint: {
     alignSelf: 'center',
     textAlign: 'center',
-    fontFamily: fonts.bodySemi,
-    fontSize: 12,
-    letterSpacing: 0.4,
-    color: colors.inkSoft,
+    fontFamily: fonts.bodyMedium,
+    fontSize: 13,
+    color: colors.slate,
     backgroundColor: colors.glass,
     overflow: 'hidden',
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    borderRadius: radius.sm,
+    borderRadius: radius.md,
     borderWidth: 1,
     borderColor: colors.paperEdge,
   },

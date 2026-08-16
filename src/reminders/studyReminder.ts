@@ -1,20 +1,49 @@
-import { Platform } from 'react-native';
+import { isRunningInExpoGo } from 'expo';
 import Constants from 'expo-constants';
 import * as IntentLauncher from 'expo-intent-launcher';
-import * as Notifications from 'expo-notifications';
+import { Platform } from 'react-native';
 
 export const STUDY_REMINDER_ID = 'canal-study-daily-reminder';
 export const STUDY_REMINDER_CHANNEL_ID = 'study-reminders';
 const ROLLING_DAYS = 14;
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
+type NotificationsModule = typeof import('expo-notifications');
+
+let notifications: NotificationsModule | null | undefined;
+let handlerReady = false;
+
+/**
+ * Android Expo Go throws if expo-notifications is imported (remote push
+ * was removed in SDK 53). Local reminders still work in a real APK.
+ */
+export function areStudyRemindersAvailable(): boolean {
+  if (Platform.OS === 'web') return false;
+  if (Platform.OS === 'android' && isRunningInExpoGo()) return false;
+  return true;
+}
+
+function loadNotifications(): NotificationsModule | null {
+  if (notifications !== undefined) return notifications;
+  if (!areStudyRemindersAvailable()) {
+    notifications = null;
+    return null;
+  }
+  // Lazy require so Expo Go never evaluates the notifications package.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  notifications = require('expo-notifications') as NotificationsModule;
+  if (!handlerReady) {
+    notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowBanner: true,
+        shouldShowList: true,
+        shouldPlaySound: true,
+        shouldSetBadge: false,
+      }),
+    });
+    handlerReady = true;
+  }
+  return notifications;
+}
 
 export function formatReminderTime(hour: number, minute: number): string {
   return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
@@ -38,13 +67,14 @@ function nextOccurrences(hour: number, minute: number, count: number): Date[] {
 }
 
 async function ensureAndroidChannel(): Promise<void> {
-  if (Platform.OS !== 'android') return;
+  const Notifications = loadNotifications();
+  if (!Notifications || Platform.OS !== 'android') return;
   await Notifications.setNotificationChannelAsync(STUDY_REMINDER_CHANNEL_ID, {
     name: 'Study reminders',
     description: 'Daily reminders to keep studying',
     importance: Notifications.AndroidImportance.HIGH,
     vibrationPattern: [0, 250, 250, 250],
-    lightColor: '#E36A2A',
+    lightColor: '#E85A3A',
     lockscreenVisibility: Notifications.AndroidNotificationVisibility.PUBLIC,
     bypassDnd: false,
   });
@@ -74,7 +104,8 @@ export async function openExactAlarmSettings(): Promise<void> {
 }
 
 export async function getNotificationPermissionGranted(): Promise<boolean> {
-  if (Platform.OS === 'web') return false;
+  const Notifications = loadNotifications();
+  if (!Notifications) return false;
   const settings = await Notifications.getPermissionsAsync();
   return (
     settings.granted ||
@@ -83,7 +114,8 @@ export async function getNotificationPermissionGranted(): Promise<boolean> {
 }
 
 export async function requestNotificationPermission(): Promise<boolean> {
-  if (Platform.OS === 'web') return false;
+  const Notifications = loadNotifications();
+  if (!Notifications) return false;
   await ensureAndroidChannel();
   const existing = await Notifications.getPermissionsAsync();
   if (
@@ -106,7 +138,8 @@ export async function requestNotificationPermission(): Promise<boolean> {
 }
 
 async function cancelAllReminderNotifications(): Promise<void> {
-  if (Platform.OS === 'web') return;
+  const Notifications = loadNotifications();
+  if (!Notifications) return;
   const scheduled = await Notifications.getAllScheduledNotificationsAsync();
   await Promise.all(
     scheduled
@@ -129,7 +162,8 @@ export async function scheduleStudyReminder(
   hour: number,
   minute: number
 ): Promise<boolean> {
-  if (Platform.OS === 'web') return false;
+  const Notifications = loadNotifications();
+  if (!Notifications) return false;
 
   const granted = await requestNotificationPermission();
   if (!granted) return false;
@@ -187,6 +221,7 @@ export async function syncStudyReminder(options: {
   hour: number;
   minute: number;
 }): Promise<boolean> {
+  if (!areStudyRemindersAvailable()) return false;
   if (!options.enabled) {
     await cancelStudyReminder();
     return true;

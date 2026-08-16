@@ -113,8 +113,10 @@ export default function SettingsScreen() {
 
   const onToggleReminder = async (next: boolean) => {
     const result = await reminder.setEnabled(next);
-    if (!result.ok && result.reason === 'permission') {
-      showPermissionHelp();
+    if (!result.ok) {
+      if (result.reason === 'permission') {
+        showPermissionHelp();
+      }
       return;
     }
     if (next && Platform.OS === 'android' && Platform.Version >= 31) {
@@ -282,16 +284,20 @@ export default function SettingsScreen() {
               <Surface delay={220}>
                 <Text style={styles.title}>Daily reminder</Text>
                 <Text style={styles.copy}>
-                  Get a local notification each day at the time you choose,
-                  even when the app is closed. On newer Android phones, allow
-                  Alarms & reminders for Canal Study so it is not delayed.
+                  {reminder.available
+                    ? 'Get a local notification each day at the time you choose, even when the app is closed. On newer Android phones, allow Alarms & reminders for Canal Study so it is not delayed.'
+                    : 'Daily reminders are not available in Expo Go. Install the Canal Study APK (or a development build) to schedule them.'}
                 </Text>
                 <View style={styles.reminderRow}>
                   <Text style={styles.reminderLabel}>Remind me to study</Text>
                   <Switch
                     value={reminder.enabled}
                     onValueChange={(value) => void onToggleReminder(value)}
-                    disabled={reminder.loading || reminder.busy}
+                    disabled={
+                      !reminder.available ||
+                      reminder.loading ||
+                      reminder.busy
+                    }
                     trackColor={{
                       false: colors.mistDeep,
                       true: colors.orangeSoft,
@@ -303,7 +309,9 @@ export default function SettingsScreen() {
                 </View>
                 <PressableScale
                   onPress={openTimePicker}
-                  disabled={reminder.loading || reminder.busy}
+                  disabled={
+                    !reminder.available || reminder.loading || reminder.busy
+                  }
                   style={styles.secondaryButton}
                 >
                   <Text style={styles.secondaryButtonText}>

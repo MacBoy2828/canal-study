@@ -13,6 +13,7 @@ export type Flashcard = {
   deckId: string;
   sourceText: string;
   destinationText: string;
+  exampleText: string;
   timesShown: number;
   timesCorrect: number;
   status: CardStatus;
@@ -33,6 +34,7 @@ export type StudyMode = 'source-to-dest' | 'dest-to-source';
 export type NewFlashcard = {
   sourceText: string;
   destinationText: string;
+  exampleText?: string;
 };
 
 export type NewDeck = {

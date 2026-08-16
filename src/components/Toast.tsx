@@ -1,12 +1,6 @@
 import { useEffect } from 'react';
 import { StyleSheet, Text } from 'react-native';
-import Animated, {
-  FadeInDown,
-  FadeOutUp,
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from 'react-native-reanimated';
+import Animated, { FadeInDown, FadeOutUp } from 'react-native-reanimated';
 
 import { colors, fonts, motion, radius, shadows, spacing } from '@/src/theme';
 
@@ -23,26 +17,19 @@ export function Toast({
   onHide,
   durationMs = 1800,
 }: Props) {
-  const scale = useSharedValue(0.96);
-
   useEffect(() => {
     if (!visible || !message) return;
-    scale.value = withSpring(1, { damping: 14, stiffness: 180 });
     const timer = setTimeout(onHide, durationMs);
     return () => clearTimeout(timer);
-  }, [visible, message, durationMs, onHide, scale]);
-
-  const style = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
+  }, [visible, message, durationMs, onHide]);
 
   if (!visible || !message) return null;
 
   return (
     <Animated.View
-      entering={FadeInDown.duration(motion.snappy).springify().damping(16)}
+      entering={FadeInDown.duration(motion.snappy)}
       exiting={FadeOutUp.duration(motion.snappy)}
-      style={[styles.toast, style]}
+      style={styles.toast}
     >
       <Text style={styles.text}>{message}</Text>
     </Animated.View>

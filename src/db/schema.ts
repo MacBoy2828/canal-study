@@ -50,6 +50,7 @@ export async function initDatabase(db: SQLiteDatabase): Promise<void> {
 
   await ensureSettingsColumns(db);
   await migrateOrCreateCards(db);
+  await ensureCardsColumns(db);
 
   await db.runAsync(
     `INSERT OR IGNORE INTO settings (id, display_limit, active_deck_id) VALUES (1, ?, NULL)`,
@@ -91,6 +92,7 @@ async function migrateOrCreateCards(db: SQLiteDatabase): Promise<void> {
         deck_id TEXT NOT NULL,
         source_text TEXT NOT NULL,
         destination_text TEXT NOT NULL,
+        example_text TEXT NOT NULL DEFAULT '',
         times_shown INTEGER NOT NULL DEFAULT 0,
         times_correct INTEGER NOT NULL DEFAULT 0,
         status TEXT NOT NULL DEFAULT 'active',
@@ -130,6 +132,7 @@ async function migrateOrCreateCards(db: SQLiteDatabase): Promise<void> {
       deck_id TEXT NOT NULL,
       source_text TEXT NOT NULL,
       destination_text TEXT NOT NULL,
+      example_text TEXT NOT NULL DEFAULT '',
       times_shown INTEGER NOT NULL DEFAULT 0,
       times_correct INTEGER NOT NULL DEFAULT 0,
       status TEXT NOT NULL DEFAULT 'active',
@@ -155,6 +158,15 @@ async function migrateOrCreateCards(db: SQLiteDatabase): Promise<void> {
     `UPDATE settings SET active_deck_id = ? WHERE id = 1`,
     deckId
   );
+}
+
+async function ensureCardsColumns(db: SQLiteDatabase): Promise<void> {
+  const cols = await columnNames(db, 'cards');
+  if (!cols.includes('example_text')) {
+    await db.execAsync(
+      `ALTER TABLE cards ADD COLUMN example_text TEXT NOT NULL DEFAULT ''`
+    );
+  }
 }
 
 export { DEFAULT_DISPLAY_LIMIT };

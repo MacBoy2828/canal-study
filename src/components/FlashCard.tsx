@@ -9,25 +9,33 @@ type Props = {
   prompt: StudyPrompt;
   revealed: boolean;
   progressLabel: string;
+  pickedOption?: string | null;
   onReveal: () => void;
   onChoose?: (option: string) => void;
 };
+
+function ExampleLine({ text }: { text: string }) {
+  if (!text) return null;
+  return <Text style={styles.example}>{text}</Text>;
+}
 
 export function FlashCardFace({
   prompt,
   revealed,
   progressLabel,
+  pickedOption,
   onReveal,
   onChoose,
 }: Props) {
   const isChoice = prompt.format === 'choice' && !!prompt.options?.length;
+  const showAnswer = revealed && (!isChoice || !!pickedOption);
 
   return (
     <PressableScale
-      onPress={revealed || isChoice ? undefined : onReveal}
+      onPress={showAnswer || (isChoice && !revealed) ? undefined : onReveal}
       style={styles.pressable}
       accessibilityLabel={
-        isChoice
+        isChoice && !revealed
           ? 'Choose the correct answer'
           : revealed
             ? 'Answer revealed'
@@ -35,63 +43,63 @@ export function FlashCardFace({
       }
     >
       <View style={[styles.card, isChoice && styles.cardChoice]}>
-        <View style={styles.rail} />
-        <View style={styles.body}>
-          <View style={styles.topRow}>
-            <Text style={styles.mode}>
-              {isChoice ? 'CHOICE  ·  ' : ''}
-              {prompt.promptLabel.toUpperCase()} → {prompt.answerLabel.toUpperCase()}
-            </Text>
+        <View style={styles.topRow}>
+          <Text style={styles.mode}>
+            {isChoice ? 'Choice · ' : ''}
+            {prompt.promptLabel} → {prompt.answerLabel}
+          </Text>
+          <View style={styles.progressChip}>
             <Text style={styles.progress}>{progressLabel}</Text>
           </View>
-          <View style={styles.progressTrack} />
-
-          {isChoice ? (
-            <Animated.View
-              key="choice"
-              entering={FadeIn.duration(motion.snappy)}
-              style={styles.face}
-            >
-              <Text style={styles.promptChoice}>{prompt.prompt}</Text>
-              <View style={styles.options}>
-                {prompt.options!.map((option, index) => (
-                  <PressableScale
-                    key={option}
-                    onPress={() => onChoose?.(option)}
-                    style={styles.option}
-                    accessibilityLabel={`Answer ${option}`}
-                  >
-                    <Text style={styles.optionIndex}>{index + 1}</Text>
-                    <Text style={styles.optionText}>{option}</Text>
-                  </PressableScale>
-                ))}
-              </View>
-            </Animated.View>
-          ) : !revealed ? (
-            <Animated.View
-              key="front"
-              entering={FadeIn.duration(motion.snappy)}
-              exiting={FadeOut.duration(100)}
-              style={styles.face}
-            >
-              <Text style={styles.prompt}>{prompt.prompt}</Text>
-              <Text style={styles.hint}>Tap to reveal</Text>
-            </Animated.View>
-          ) : (
-            <Animated.View
-              key="back"
-              entering={FadeIn.duration(motion.snappy)}
-              style={styles.face}
-            >
-              <Text style={styles.promptSmall}>{prompt.prompt}</Text>
-              <View style={styles.divider} />
-              <Text style={styles.answer}>{prompt.answer}</Text>
-              <Text style={styles.hint}>
-                Swipe right if correct · left if wrong
-              </Text>
-            </Animated.View>
-          )}
         </View>
+
+        {isChoice && !revealed ? (
+          <Animated.View
+            key="choice"
+            entering={FadeIn.duration(motion.snappy)}
+            style={styles.face}
+          >
+            <Text style={styles.promptChoice}>{prompt.prompt}</Text>
+            <View style={styles.options}>
+              {prompt.options!.map((option) => (
+                <PressableScale
+                  key={option}
+                  onPress={() => onChoose?.(option)}
+                  style={styles.option}
+                  accessibilityLabel={`Answer ${option}`}
+                >
+                  <Text style={styles.optionText}>{option}</Text>
+                </PressableScale>
+              ))}
+            </View>
+          </Animated.View>
+        ) : !revealed ? (
+          <Animated.View
+            key="front"
+            entering={FadeIn.duration(motion.snappy)}
+            exiting={FadeOut.duration(100)}
+            style={styles.face}
+          >
+            <Text style={styles.prompt}>{prompt.prompt}</Text>
+            <Text style={styles.hint}>Tap to reveal</Text>
+          </Animated.View>
+        ) : (
+          <Animated.View
+            key="back"
+            entering={FadeIn.duration(motion.snappy)}
+            style={styles.face}
+          >
+            <Text style={styles.promptSmall}>{prompt.prompt}</Text>
+            <View style={styles.divider} />
+            <Text style={styles.answer}>{prompt.answer}</Text>
+            <ExampleLine text={prompt.example} />
+            <Text style={styles.hint}>
+              {isChoice
+                ? 'Tap Continue when you are ready'
+                : 'Swipe right if correct · left if wrong'}
+            </Text>
+          </Animated.View>
+        )}
       </View>
     </PressableScale>
   );
@@ -104,50 +112,42 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.paper,
     borderRadius: radius.card,
-    minHeight: 340,
+    minHeight: 360,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.xl,
     borderWidth: 1,
     borderColor: colors.paperEdge,
     ...shadows.lift,
+    justifyContent: 'center',
     overflow: 'hidden',
-    flexDirection: 'row',
   },
   cardChoice: {
     minHeight: 0,
-  },
-  rail: {
-    width: 5,
-    backgroundColor: colors.rail,
-  },
-  body: {
-    flex: 1,
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.lg,
-    justifyContent: 'center',
   },
   topRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: spacing.sm,
+    marginBottom: spacing.md,
   },
   mode: {
     flex: 1,
-    fontFamily: fonts.bodySemi,
-    fontSize: 11,
-    letterSpacing: 0.8,
-    color: colors.rail,
+    fontFamily: fonts.bodyMedium,
+    fontSize: 13,
+    color: colors.slate,
+  },
+  progressChip: {
+    backgroundColor: colors.paperWarm,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: radius.sm,
   },
   progress: {
     fontFamily: fonts.bodySemi,
     fontSize: 12,
     color: colors.slate,
-  },
-  progressTrack: {
-    height: 2,
-    backgroundColor: colors.mistSoft,
-    marginTop: spacing.sm,
-    marginBottom: spacing.md,
   },
   face: {
     alignItems: 'center',
@@ -157,20 +157,19 @@ const styles = StyleSheet.create({
   },
   prompt: {
     fontFamily: fonts.displayBold,
-    fontSize: 40,
-    lineHeight: 46,
-    letterSpacing: -0.8,
+    fontSize: 42,
+    lineHeight: 48,
+    letterSpacing: -1,
     color: colors.ink,
     textAlign: 'center',
   },
   promptChoice: {
     fontFamily: fonts.displayBold,
-    fontSize: 28,
-    lineHeight: 34,
-    letterSpacing: -0.4,
+    fontSize: 30,
+    lineHeight: 36,
+    letterSpacing: -0.6,
     color: colors.ink,
     textAlign: 'center',
-    marginBottom: spacing.xs,
   },
   promptSmall: {
     fontFamily: fonts.bodyMedium,
@@ -179,50 +178,53 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   divider: {
-    width: 40,
-    height: 2,
+    width: 36,
+    height: 3,
+    borderRadius: 2,
     backgroundColor: colors.orange,
   },
   answer: {
     fontFamily: fonts.displayBold,
-    fontSize: 36,
-    lineHeight: 42,
-    letterSpacing: -0.5,
+    fontSize: 38,
+    lineHeight: 44,
+    letterSpacing: -0.8,
     color: colors.ink,
     textAlign: 'center',
   },
+  example: {
+    fontFamily: fonts.body,
+    fontSize: 16,
+    lineHeight: 22,
+    fontStyle: 'italic',
+    color: colors.slate,
+    textAlign: 'center',
+    paddingHorizontal: spacing.sm,
+  },
   hint: {
     fontFamily: fonts.bodyMedium,
-    fontSize: 13,
+    fontSize: 14,
     color: colors.slate,
     textAlign: 'center',
   },
   options: {
     width: '100%',
     gap: spacing.sm,
+    marginTop: spacing.xs,
   },
   option: {
     width: '100%',
-    backgroundColor: colors.paperWarm,
+    backgroundColor: colors.mistSoft,
     borderRadius: radius.md,
     borderWidth: 1,
     borderColor: colors.paperEdge,
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: spacing.md,
-    flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.md,
-  },
-  optionIndex: {
-    fontFamily: fonts.displayBold,
-    fontSize: 14,
-    color: colors.rail,
-    width: 20,
   },
   optionText: {
-    flex: 1,
     fontFamily: fonts.bodySemi,
     fontSize: 17,
     color: colors.ink,
+    textAlign: 'center',
   },
 });

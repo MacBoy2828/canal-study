@@ -11,34 +11,34 @@ export const spacing = {
 } as const;
 
 export const radius = {
-  sm: 6,
-  md: 10,
-  lg: 14,
-  card: 16,
-  sheet: 18,
+  sm: 12,
+  md: 18,
+  lg: 24,
+  card: 28,
+  sheet: 28,
 } as const;
 
 export const shadows = {
   soft: {
-    shadowColor: '#0E1A22',
-    shadowOpacity: 0.06,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
+    shadowColor: '#1C1814',
+    shadowOpacity: 0.07,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 3,
   },
   lift: {
-    shadowColor: '#0E1A22',
+    shadowColor: '#1C1814',
     shadowOpacity: 0.1,
-    shadowRadius: 18,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 5,
+    shadowRadius: 22,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 6,
   },
   float: {
-    shadowColor: '#0E1A22',
-    shadowOpacity: 0.12,
-    shadowRadius: 24,
-    shadowOffset: { width: 0, height: 12 },
-    elevation: 8,
+    shadowColor: '#1C1814',
+    shadowOpacity: 0.14,
+    shadowRadius: 30,
+    shadowOffset: { width: 0, height: 14 },
+    elevation: 10,
   },
 } as const;
 

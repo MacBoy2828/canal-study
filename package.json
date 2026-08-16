@@ -3,8 +3,8 @@
   "main": "expo-router/entry",
   "version": "2.0.4",
   "dependencies": {
-    "@expo-google-fonts/dm-sans": "^0.4.2",
-    "@expo-google-fonts/syne": "^0.4.2",
+    "@expo-google-fonts/bricolage-grotesque": "^0.4.1",
+    "@expo-google-fonts/outfit": "^0.4.3",
     "@expo/vector-icons": "^15.0.2",
     "@react-native-community/datetimepicker": "9.1.0",
     "expo": "~57.0.13",
@@ -38,7 +38,7 @@
     "typescript": "~6.0.3"
   },
   "scripts": {
-    "start": "expo start",
+    "start": "env ELECTRON_DISABLE_SANDBOX=1 expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",

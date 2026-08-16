@@ -1,11 +1,10 @@
 import { Image } from 'expo-image';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { colors, fonts, radius, spacing } from '@/src/theme';
+import { colors, fonts, shadows, spacing } from '@/src/theme';
 
 type Props = {
   subtitle?: string;
-  /** Kept for compatibility; header is always light on the teal band. */
   light?: boolean;
 };
 
@@ -20,7 +19,7 @@ export function BrandHeader({ subtitle }: Props) {
         />
       </View>
       <View style={styles.textCol}>
-        <Text style={styles.brand}>CANAL STUDY</Text>
+        <Text style={styles.brand}>Canal</Text>
         {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
       </View>
     </View>
@@ -31,18 +30,19 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
+    gap: spacing.md,
     marginBottom: spacing.md,
   },
   markWrap: {
-    borderRadius: radius.sm,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.28)',
+    width: 48,
+    height: 48,
+    borderRadius: 16,
     overflow: 'hidden',
+    ...shadows.soft,
   },
   mark: {
-    width: 40,
-    height: 40,
+    width: 48,
+    height: 48,
   },
   textCol: {
     flex: 1,
@@ -50,13 +50,13 @@ const styles = StyleSheet.create({
   },
   brand: {
     fontFamily: fonts.displayBold,
-    fontSize: 18,
-    letterSpacing: 1.4,
-    color: colors.white,
+    fontSize: 28,
+    letterSpacing: -0.8,
+    color: colors.ink,
   },
   subtitle: {
     fontFamily: fonts.bodyMedium,
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.78)',
+    fontSize: 14,
+    color: colors.slate,
   },
 });
