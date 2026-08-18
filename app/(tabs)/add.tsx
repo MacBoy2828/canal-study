@@ -129,8 +129,7 @@ export default function AddScreen() {
             placeholder={`Word in ${activeDeck.sourceLanguage}`}
             placeholderTextColor={colors.tabInactive}
             style={styles.input}
-            autoCapitalize="none"
-            autoCorrect={false}
+            autoCapitalize="sentences"
             returnKeyType="next"
             blurOnSubmit={false}
             onSubmitEditing={() => destinationRef.current?.focus()}
@@ -143,7 +142,7 @@ export default function AddScreen() {
             placeholder={`Word in ${activeDeck.destinationLanguage}`}
             placeholderTextColor={colors.tabInactive}
             style={styles.input}
-            autoCapitalize="none"
+            autoCapitalize="sentences"
             returnKeyType="next"
             blurOnSubmit={false}
             onSubmitEditing={() => exampleRef.current?.focus()}
@@ -228,6 +227,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.orange,
     borderRadius: radius.md,
     paddingVertical: 15,
+    paddingHorizontal: spacing.md,
     alignItems: 'center',
   },
   buttonDisabled: {

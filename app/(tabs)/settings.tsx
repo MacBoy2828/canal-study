@@ -434,6 +434,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.orange,
     borderRadius: radius.md,
     paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
     alignItems: 'center',
     ...shadows.soft,
   },

@@ -71,6 +71,7 @@ const styles = StyleSheet.create({
   button: {
     flex: 1,
     paddingVertical: 14,
+    paddingHorizontal: spacing.md,
     borderRadius: radius.md,
     alignItems: 'center',
   },

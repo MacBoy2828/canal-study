@@ -51,5 +51,7 @@ export function PressableScale({
 const styles = StyleSheet.create({
   fill: {
     width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

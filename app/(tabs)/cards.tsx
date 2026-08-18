@@ -160,6 +160,7 @@ export default function CardsScreen() {
                 style={styles.input}
                 placeholder={activeDeck.sourceLanguage}
                 placeholderTextColor={colors.tabInactive}
+                autoCapitalize="sentences"
                 autoFocus
               />
               <Text style={styles.modalLabel}>
@@ -171,6 +172,7 @@ export default function CardsScreen() {
                 style={styles.input}
                 placeholder={activeDeck.destinationLanguage}
                 placeholderTextColor={colors.tabInactive}
+                autoCapitalize="sentences"
               />
               <Text style={styles.modalLabel}>Example (optional)</Text>
               <TextInput
@@ -316,6 +318,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
   },
   secondaryText: {
     fontFamily: fonts.bodySemi,
@@ -328,6 +331,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     alignItems: 'center',
     paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
     ...shadows.soft,
   },
   primaryText: {

@@ -209,6 +209,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     alignItems: 'center',
     paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
   },
   secondaryText: {
     fontFamily: fonts.bodySemi,
