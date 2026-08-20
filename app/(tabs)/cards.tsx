@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -26,14 +26,30 @@ import { useActiveCards } from '@/src/hooks/useCards';
 import { useDecks } from '@/src/hooks/useDecks';
 import { colors, fonts, motion, radius, shadows, spacing } from '@/src/theme';
 
+function matchesQuery(card: Flashcard, query: string): boolean {
+  const q = query.trim().toLocaleLowerCase();
+  if (!q) return true;
+  return (
+    card.sourceText.toLocaleLowerCase().includes(q) ||
+    card.destinationText.toLocaleLowerCase().includes(q) ||
+    card.exampleText.toLocaleLowerCase().includes(q)
+  );
+}
+
 export default function CardsScreen() {
   const insets = useSafeAreaInsets();
   const { decks, activeDeck, select, displayLimit } = useDecks();
   const { cards, loading, update, remove } = useActiveCards();
+  const [query, setQuery] = useState('');
   const [editing, setEditing] = useState<Flashcard | null>(null);
   const [sourceText, setSourceText] = useState('');
   const [destinationText, setDestinationText] = useState('');
   const [exampleText, setExampleText] = useState('');
+
+  const filtered = useMemo(
+    () => cards.filter((card) => matchesQuery(card, query)),
+    [cards, query]
+  );
 
   const openEdit = (card: Flashcard) => {
     setEditing(card);
@@ -93,37 +109,62 @@ export default function CardsScreen() {
           message={`Add ${activeDeck.sourceLanguage} ↔ ${activeDeck.destinationLanguage} cards from the Add tab.`}
         />
       ) : (
-        <FlatList
-          data={cards}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.list}
-          renderItem={({ item, index }) => (
-            <Animated.View
-              entering={FadeInDown.duration(motion.normal)
-                .delay(Math.min(index, 8) * 40)
-                .springify()
-                .damping(18)}
-              style={styles.row}
-            >
-              <Pressable style={styles.main} onPress={() => openEdit(item)}>
-                <Text style={styles.source}>{item.sourceText}</Text>
-                <Text style={styles.destination}>{item.destinationText}</Text>
-                {item.exampleText ? (
-                  <Text style={styles.example} numberOfLines={2}>
-                    {item.exampleText}
-                  </Text>
-                ) : null}
-                <Text style={styles.meta}>
-                  Shown {item.timesShown} / {displayLimit} · Correct{' '}
-                  {item.timesCorrect}
-                </Text>
-              </Pressable>
-              <Pressable onPress={() => confirmDelete(item)} style={styles.delete}>
-                <Text style={styles.deleteText}>Delete</Text>
-              </Pressable>
-            </Animated.View>
+        <>
+          <TextInput
+            value={query}
+            onChangeText={setQuery}
+            placeholder="Search cards…"
+            placeholderTextColor={colors.tabInactive}
+            style={styles.search}
+            autoCapitalize="none"
+            autoCorrect={false}
+            clearButtonMode="while-editing"
+            returnKeyType="search"
+          />
+          {filtered.length === 0 ? (
+            <Text style={styles.emptySearch}>
+              No cards match “{query.trim()}”.
+            </Text>
+          ) : (
+            <FlatList
+              data={filtered}
+              keyExtractor={(item) => item.id}
+              keyboardShouldPersistTaps="handled"
+              contentContainerStyle={styles.list}
+              renderItem={({ item, index }) => (
+                <Animated.View
+                  entering={FadeInDown.duration(motion.normal)
+                    .delay(Math.min(index, 8) * 40)
+                    .springify()
+                    .damping(18)}
+                  style={styles.row}
+                >
+                  <Pressable style={styles.main} onPress={() => openEdit(item)}>
+                    <Text style={styles.source}>{item.sourceText}</Text>
+                    <Text style={styles.destination}>
+                      {item.destinationText}
+                    </Text>
+                    {item.exampleText ? (
+                      <Text style={styles.example} numberOfLines={2}>
+                        {item.exampleText}
+                      </Text>
+                    ) : null}
+                    <Text style={styles.meta}>
+                      Shown {item.timesShown} / {displayLimit} · Correct{' '}
+                      {item.timesCorrect}
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => confirmDelete(item)}
+                    style={styles.delete}
+                  >
+                    <Text style={styles.deleteText}>Delete</Text>
+                  </Pressable>
+                </Animated.View>
+              )}
+            />
           )}
-        />
+        </>
       )}
 
       <Modal
@@ -206,11 +247,33 @@ export default function CardsScreen() {
 }
 
 const styles = StyleSheet.create({
+  search: {
+    backgroundColor: colors.paper,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.paperEdge,
+    paddingHorizontal: spacing.md,
+    paddingVertical: Platform.OS === 'ios' ? 12 : 10,
+    fontFamily: fonts.body,
+    fontSize: 16,
+    color: colors.ink,
+    marginBottom: spacing.sm,
+    ...shadows.soft,
+  },
+  emptySearch: {
+    fontFamily: fonts.body,
+    fontSize: 15,
+    color: colors.slate,
+    textAlign: 'center',
+    marginTop: spacing.lg,
+    paddingHorizontal: spacing.md,
+  },
   list: {
     paddingBottom: spacing.xxl,
     gap: spacing.sm,
   },
   row: {
+    width: '100%',
     backgroundColor: colors.paper,
     borderRadius: radius.lg,
     padding: spacing.md,
@@ -226,19 +289,21 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   source: {
-    fontFamily: fonts.display,
-    fontSize: 22,
-    letterSpacing: -0.3,
+    fontFamily: fonts.cardSemi,
+    fontSize: 20,
+    lineHeight: 28,
     color: colors.ink,
   },
   destination: {
-    fontFamily: fonts.bodyMedium,
+    fontFamily: fonts.cardMedium,
     fontSize: 16,
+    lineHeight: 22,
     color: colors.slate,
   },
   example: {
-    fontFamily: fonts.body,
+    fontFamily: fonts.card,
     fontSize: 14,
+    lineHeight: 20,
     fontStyle: 'italic',
     color: colors.slate,
     marginTop: 2,

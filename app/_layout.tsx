@@ -3,6 +3,12 @@ import {
   BricolageGrotesque_700Bold,
 } from '@expo-google-fonts/bricolage-grotesque';
 import {
+  Literata_400Regular,
+  Literata_500Medium,
+  Literata_600SemiBold,
+  Literata_700Bold,
+} from '@expo-google-fonts/literata';
+import {
   Outfit_400Regular,
   Outfit_500Medium,
   Outfit_600SemiBold,
@@ -37,6 +43,10 @@ export default function RootLayout() {
     Outfit_400Regular,
     Outfit_500Medium,
     Outfit_600SemiBold,
+    Literata_400Regular,
+    Literata_500Medium,
+    Literata_600SemiBold,
+    Literata_700Bold,
   });
 
   useEffect(() => {
